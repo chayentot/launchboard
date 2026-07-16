@@ -58,7 +58,7 @@ function productCard(p) {
   return `<article class="product-card">
     <div class="product-image">${image}<span class="product-price">${escapeHTML(p.price || 'View price')}</span></div>
     <div class="product-body">
-      <div class="product-meta"><span>${escapeHTML(p.category)}</span><span>by ${escapeHTML(p.creator)}</span></div>
+      <div class="product-meta"><span>${escapeHTML(p.category)}</span><span>${escapeHTML(p.product_type || 'Product')}</span></div><div class="product-submeta">by ${escapeHTML(p.creator)}${p.brand ? ` · ${escapeHTML(p.brand)}` : ''}${p.country ? ` · ${escapeHTML(p.country)}` : ''}</div>
       <h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p>
       <div class="tag-row">${(p.tags || []).slice(0, 3).map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join('')}</div>
       <div class="product-actions"><a class="btn btn-primary visit-product" data-id="${p.id}" href="${safeURL(p.product_url)}" target="_blank" rel="noopener noreferrer">View product ↗</a><span class="click-count">${p.clicks || 0} clicks</span></div>
@@ -174,6 +174,11 @@ $('#productForm').addEventListener('submit', async (e) => {
       title: String(fd.get('title')).trim(),
       creator: String(fd.get('creator')).trim(),
       category: String(fd.get('category')),
+      product_type: String(fd.get('productType')),
+      brand: String(fd.get('brand')).trim() || null,
+      condition: String(fd.get('condition')).trim() || null,
+      country: String(fd.get('country')).trim() || null,
+      shipping: String(fd.get('shipping')).trim() || null,
       price: String(fd.get('price')).trim() || 'View price',
       image_url: imageUrl,
       product_url: String(fd.get('url')).trim(),
@@ -199,13 +204,11 @@ $$('[data-category]').forEach(btn => btn.onclick = () => { $('#categoryFilter').
 ['heroSubmitBtn', 'sectionSubmitBtn', 'ctaSubmitBtn'].forEach(id => $('#' + id).onclick = openProductModal);
 $('#profileAddProduct').onclick = () => { $('#profileModal').close(); openProductModal(); };
 $('#logoutBtn').onclick = async () => { await db?.auth.signOut(); $('#profileModal').close(); showToast('You have been logged out.'); };
-document.querySelectorAll('dialog').forEach(d => {
-  d.addEventListener('click', e => {
-    if (e.target === d) {
-      d.close();
-    }
-  });
-});
+document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => {
+  // Close only when the actual dialog backdrop is clicked.
+  // Coordinate-based checks can mistake native select menus for outside clicks.
+  if (e.target === d) d.close();
+}));
 
 async function initialize() {
   $('#year').textContent = new Date().getFullYear();

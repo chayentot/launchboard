@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="LaunchBoard helps creators promote products and send visitors to their official sales pages." />
+  <meta name="description" content="LaunchBoard helps creators promote physical products, digital products, and services through their official sales pages." />
+  <meta name="author" content="TanTan Plays" />
+  <meta name="application-name" content="LaunchBoard" />
+  <meta name="copyright" content="© 2026 TanTan Plays" />
   <title>LaunchBoard — Discover creator products</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +40,7 @@
       <div class="hero-copy">
         <span class="eyebrow">A discovery platform for independent creators</span>
         <h1>Put your product in front of people who care.</h1>
-        <p>Share your app, template, course, artwork, service, or digital product. We help people discover it—your own store handles the sale.</p>
+        <p>Share clothing, electronics, handmade goods, apps, courses, services, and more. We help people discover them—your own store handles the sale.</p>
         <div class="hero-actions">
           <button class="btn btn-primary btn-large" id="heroSubmitBtn">Submit a product</button>
           <a class="btn btn-secondary btn-large" href="#discover">Browse products</a>
@@ -89,12 +92,28 @@
         </label>
         <select id="categoryFilter" aria-label="Filter by category">
           <option value="all">All categories</option>
-          <option value="Technology">Technology</option>
-          <option value="Design">Design</option>
-          <option value="Education">Education</option>
-          <option value="Productivity">Productivity</option>
-          <option value="Business">Business</option>
-          <option value="Lifestyle">Lifestyle</option>
+          <option value="Fashion & Clothing">Fashion & Clothing</option>
+          <option value="Shoes">Shoes</option>
+          <option value="Bags & Accessories">Bags & Accessories</option>
+          <option value="Beauty & Cosmetics">Beauty & Cosmetics</option>
+          <option value="Jewelry">Jewelry</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Software & Apps">Software & Apps</option>
+          <option value="Games">Games</option>
+          <option value="Books & eBooks">Books & eBooks</option>
+          <option value="Courses & Education">Courses & Education</option>
+          <option value="Art & Design">Art & Design</option>
+          <option value="Home & Living">Home & Living</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Food & Drinks">Food & Drinks</option>
+          <option value="Pet Products">Pet Products</option>
+          <option value="Automotive">Automotive</option>
+          <option value="Health & Fitness">Health & Fitness</option>
+          <option value="Toys & Kids">Toys & Kids</option>
+          <option value="Gifts">Gifts</option>
+          <option value="Handmade & Crafts">Handmade & Crafts</option>
+          <option value="Tools & Hardware">Tools & Hardware</option>
+          <option value="Travel & Services">Travel & Services</option>
           <option value="Other">Other</option>
         </select>
         <select id="sortFilter" aria-label="Sort products">
@@ -120,12 +139,14 @@
         </div>
       </div>
       <div class="category-grid">
-        <button data-category="Technology"><span>⚡</span><strong>Technology</strong><small>Apps, tools & software</small></button>
-        <button data-category="Design"><span>✦</span><strong>Design</strong><small>Assets, templates & art</small></button>
-        <button data-category="Education"><span>◫</span><strong>Education</strong><small>Courses & learning</small></button>
-        <button data-category="Productivity"><span>✓</span><strong>Productivity</strong><small>Systems & resources</small></button>
-        <button data-category="Business"><span>↗</span><strong>Business</strong><small>Growth & operations</small></button>
-        <button data-category="Lifestyle"><span>☼</span><strong>Lifestyle</strong><small>Wellness & hobbies</small></button>
+        <button data-category="Fashion & Clothing"><span>👗</span><strong>Fashion & Clothing</strong><small>Dresses, shirts & apparel</small></button>
+        <button data-category="Electronics"><span>📱</span><strong>Electronics</strong><small>Phones, gadgets & devices</small></button>
+        <button data-category="Software & Apps"><span>💻</span><strong>Software & Apps</strong><small>Digital tools & platforms</small></button>
+        <button data-category="Home & Living"><span>🏠</span><strong>Home & Living</strong><small>Décor, kitchen & everyday goods</small></button>
+        <button data-category="Beauty & Cosmetics"><span>💄</span><strong>Beauty & Cosmetics</strong><small>Skincare, makeup & wellness</small></button>
+        <button data-category="Handmade & Crafts"><span>🧶</span><strong>Handmade & Crafts</strong><small>Unique creator-made products</small></button>
+        <button data-category="Courses & Education"><span>🎓</span><strong>Courses & Education</strong><small>Learning and training</small></button>
+        <button data-category="Food & Drinks"><span>🍔</span><strong>Food & Drinks</strong><small>Local and specialty products</small></button>
       </div>
     </section>
 
@@ -156,7 +177,8 @@
   <footer>
     <a href="#" class="brand"><span class="brand-mark">L</span><span>LaunchBoard</span></a>
     <p>Helping independent creators get discovered.</p>
-    <p>© <span id="year"></span> LaunchBoard</p>
+    <p>LaunchBoard™ by <strong>TanTan Plays</strong></p>
+    <p>© <span id="year"></span> TanTan Plays. All rights reserved.</p>
   </footer>
 
   <dialog class="modal" id="signupModal">
@@ -196,8 +218,13 @@
       <div class="form-grid">
         <label>Product name<input name="title" required maxlength="70" placeholder="e.g. Focus Flow Notion System" /></label>
         <label>Creator or brand<input name="creator" required maxlength="50" placeholder="e.g. Ana Kim Studio" /></label>
-        <label>Category<select name="category" required><option value="">Choose a category</option><option>Technology</option><option>Design</option><option>Education</option><option>Productivity</option><option>Business</option><option>Lifestyle</option><option>Other</option></select></label>
+        <label>Category<select name="category" required><option value="">Choose a category</option><option>Fashion & Clothing</option><option>Shoes</option><option>Bags & Accessories</option><option>Beauty & Cosmetics</option><option>Jewelry</option><option>Electronics</option><option>Software & Apps</option><option>Games</option><option>Books & eBooks</option><option>Courses & Education</option><option>Art & Design</option><option>Home & Living</option><option>Furniture</option><option>Food & Drinks</option><option>Pet Products</option><option>Automotive</option><option>Health & Fitness</option><option>Toys & Kids</option><option>Gifts</option><option>Handmade & Crafts</option><option>Tools & Hardware</option><option>Travel & Services</option><option>Other</option></select></label>
+        <label>Product type<select name="productType" required><option value="">Choose a type</option><option>Physical</option><option>Digital</option><option>Service</option></select></label>
         <label>Price display<input name="price" maxlength="20" placeholder="e.g. $19 or Free" /></label>
+        <label>Brand (optional)<input name="brand" maxlength="60" placeholder="e.g. TanTan Plays" /></label>
+        <label>Condition<select name="condition"><option value="">Not applicable</option><option>New</option><option>Used - Like new</option><option>Used - Good</option><option>Used - Fair</option></select></label>
+        <label>Country or location<input name="country" maxlength="60" placeholder="e.g. Philippines or Worldwide" /></label>
+        <label>Shipping<select name="shipping"><option value="">Not specified</option><option>Available</option><option>Local pickup only</option><option>Digital delivery</option><option>Not applicable</option></select></label>
         <label class="full-span">Upload product image<input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" /><small>Optional. Maximum 5 MB.</small></label>
         <label class="full-span">Or use an image URL<input name="image" type="url" placeholder="https://example.com/product-image.jpg" /></label>
         <label class="full-span">Official product link<input name="url" type="url" required placeholder="https://your-store.com/product" /></label>
@@ -225,9 +252,4 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
-  <footer>
-    <p>LaunchBoard™</p>
-    <p>Designed & Developed by <strong>TanTan Plays</strong></p>
-    <p>© 2026 TanTan Plays. All Rights Reserved.</p>
-</footer>
 </html>
