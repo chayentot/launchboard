@@ -12,6 +12,7 @@
 </head>
 <body>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="setup-banner hidden" id="setupBanner">Supabase is not configured yet. Open <code>config.js</code> and add your project URL and publishable key.</div>
 
   <header class="site-header">
     <a href="#" class="brand" aria-label="LaunchBoard home">
@@ -197,7 +198,8 @@
         <label>Creator or brand<input name="creator" required maxlength="50" placeholder="e.g. Ana Kim Studio" /></label>
         <label>Category<select name="category" required><option value="">Choose a category</option><option>Technology</option><option>Design</option><option>Education</option><option>Productivity</option><option>Business</option><option>Lifestyle</option><option>Other</option></select></label>
         <label>Price display<input name="price" maxlength="20" placeholder="e.g. $19 or Free" /></label>
-        <label class="full-span">Product image URL<input name="image" type="url" placeholder="https://example.com/product-image.jpg" /></label>
+        <label class="full-span">Upload product image<input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" /><small>Optional. Maximum 5 MB.</small></label>
+        <label class="full-span">Or use an image URL<input name="image" type="url" placeholder="https://example.com/product-image.jpg" /></label>
         <label class="full-span">Official product link<input name="url" type="url" required placeholder="https://your-store.com/product" /></label>
         <label class="full-span">Short description<textarea name="description" required maxlength="180" rows="4" placeholder="Explain what your product does and who it is for."></textarea><small><span id="descriptionCount">0</span>/180 characters</small></label>
         <label class="full-span">Tags<input name="tags" maxlength="80" placeholder="notion, productivity, template" /></label>
@@ -219,6 +221,8 @@
     </div>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
