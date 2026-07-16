@@ -199,7 +199,13 @@ $$('[data-category]').forEach(btn => btn.onclick = () => { $('#categoryFilter').
 ['heroSubmitBtn', 'sectionSubmitBtn', 'ctaSubmitBtn'].forEach(id => $('#' + id).onclick = openProductModal);
 $('#profileAddProduct').onclick = () => { $('#profileModal').close(); openProductModal(); };
 $('#logoutBtn').onclick = async () => { await db?.auth.signOut(); $('#profileModal').close(); showToast('You have been logged out.'); };
-document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { const r = d.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close(); }));
+document.querySelectorAll('dialog').forEach(d => {
+  d.addEventListener('click', e => {
+    if (e.target === d) {
+      d.close();
+    }
+  });
+});
 
 async function initialize() {
   $('#year').textContent = new Date().getFullYear();
