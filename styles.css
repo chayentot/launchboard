@@ -125,3 +125,68 @@
   background:#eef0f7;
   border-radius:18px;
 }
+
+/* Correct LaunchBoard selectors — full vertical image, no cropping */
+.card.product .product-media {
+  height: 420px !important;
+  min-height: 420px !important;
+  aspect-ratio: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  background: #eef0f7 !important;
+  padding: 8px !important;
+}
+
+.card.product .product-media img,
+.card.product .product-media img.product-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+/* Product details page */
+.detail-media {
+  height: 640px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #eef0f7 !important;
+  padding: 12px !important;
+}
+
+.detail-media img,
+.detail-media .product-detail-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+}
+
+@media (max-width: 900px) {
+  .card.product .product-media {
+    height: 390px !important;
+    min-height: 390px !important;
+  }
+
+  .detail-media {
+    height: 520px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .card.product .product-media {
+    height: 460px !important;
+    min-height: 460px !important;
+  }
+
+  .detail-media {
+    height: 500px !important;
+  }
+}
