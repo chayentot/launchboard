@@ -57,3 +57,71 @@
   color:var(--muted,#68708a);
   font-size:.82rem;
 }
+
+/* Full portrait product images: show the whole photo without cropping */
+.product-card .media,
+.product-card .product-media,
+.product-card figure,
+.product-card .image-wrap,
+.product-card .thumb,
+.product-card > .image,
+.product-card > a:first-child {
+  width:100%;
+  aspect-ratio:3 / 4;
+  min-height:360px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eef0f7;
+}
+
+.product-card .media img,
+.product-card .product-media img,
+.product-card figure img,
+.product-card .image-wrap img,
+.product-card .thumb img,
+.product-card > img,
+.product-card img.product-image,
+.product-card .cover,
+.product-card > a:first-child img {
+  width:100% !important;
+  height:100% !important;
+  max-height:none !important;
+  aspect-ratio:auto !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  display:block;
+  background:#eef0f7;
+}
+
+/* Common LaunchBoard markup fallback */
+.card-product .product-image,
+.card-product .cover,
+.card-product img,
+.product-grid .card img {
+  object-fit:contain !important;
+  object-position:center center !important;
+}
+
+/* Keep a consistent portrait frame on desktop and mobile */
+@media (max-width:700px){
+  .product-card .media,
+  .product-card .product-media,
+  .product-card figure,
+  .product-card .image-wrap,
+  .product-card .thumb,
+  .product-card > .image,
+  .product-card > a:first-child {
+    min-height:300px;
+  }
+}
+
+.product-detail-image{
+  width:100%;
+  max-height:760px;
+  object-fit:contain;
+  object-position:center;
+  background:#eef0f7;
+  border-radius:18px;
+}
