@@ -17,3 +17,43 @@
   .product-management-actions{width:100%}
   .product-management-actions .btn{flex:1;text-align:center}
 }
+
+/* Portrait product-card presentation */
+.product-card .product-image,
+.product-card > img,
+.product-card img.product-image,
+.product-card .cover,
+.product-card .media img,
+.product-card figure img{
+  width:100%;
+  aspect-ratio:3 / 4;
+  height:auto;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+
+.product-card .media,
+.product-card figure,
+.product-card .product-media{
+  aspect-ratio:3 / 4;
+  overflow:hidden;
+  margin:0;
+  background:#eef0f7;
+}
+
+.product-card h3,
+.product-card .product-title{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  overflow:hidden;
+  min-height:3.9em;
+}
+
+.title-counter{
+  margin-top:-8px;
+  text-align:right;
+  color:var(--muted,#68708a);
+  font-size:.82rem;
+}

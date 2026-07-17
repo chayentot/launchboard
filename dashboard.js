@@ -1,6 +1,7 @@
 const cats=['Fashion & Clothing','Shoes','Bags & Accessories','Beauty & Cosmetics','Jewelry','Electronics','Software & Apps','Games','Books & eBooks','Courses & Education','Art & Design','Home & Living','Furniture','Food & Drinks','Pet Products','Automotive','Health & Fitness','Toys & Kids','Gifts','Handmade & Crafts','Tools & Hardware','Travel & Services','Other'];
 const PRODUCT_BUCKET='product-images';
 const MAX_IMAGE_BYTES=5*1024*1024;
+const MAX_TITLE_LENGTH=80;
 const ALLOWED_IMAGE_TYPES=new Set(['image/jpeg','image/png','image/webp','image/gif']);
 let creatorProducts=[];
 
@@ -92,6 +93,7 @@ function openCreateProduct(){
   $('#cancelProductEdit').hidden=true;
   $('#productUploadStatus').textContent='';
   clearImagePreview();
+  updateProductTitleCount();
   $('#productModal').showModal();
 }
 
@@ -121,6 +123,7 @@ function openEditProduct(productId){
     ? 'Current image will be kept unless you upload a replacement.'
     : '';
   showRemoteImagePreview(product.image_url);
+  updateProductTitleCount();
   $('#productModal').showModal();
 }
 
@@ -153,8 +156,14 @@ async function saveProduct(e){
       }
     }
 
+    const productTitle=String(f.get('title')||'').trim();
+    if(!productTitle)throw new Error('Product title is required.');
+    if(productTitle.length>MAX_TITLE_LENGTH){
+      throw new Error(`Product title must be ${MAX_TITLE_LENGTH} characters or fewer.`);
+    }
+
     const item={
-      title:String(f.get('title')||'').trim(),
+      title:productTitle,
       creator:String(f.get('creator')||'').trim(),
       price:String(f.get('price')||'').trim()||'View price',
       category:f.get('category'),
@@ -276,6 +285,12 @@ function previewSelectedImage(){
   $('#productImagePreviewWrap').hidden=false;
 }
 
+function updateProductTitleCount(){
+  const input=$('#productForm')?.elements?.title;
+  const counter=$('#productTitleCount');
+  if(counter)counter.textContent=String(input?.value?.length||0);
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
   cats.forEach(c=>$('#productCategory').insertAdjacentHTML('beforeend',`<option value="${esc(c)}">${esc(c)}</option>`));
   $('#openSubmit').onclick=openCreateProduct;
@@ -284,6 +299,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   $('#profileForm').onsubmit=saveProfile;
   $('#productForm').onsubmit=saveProduct;
   $('#productImageFile').onchange=previewSelectedImage;
+  $('#productForm').elements.title.addEventListener('input',updateProductTitleCount);
+  updateProductTitleCount();
   $('#productModal').addEventListener('close',()=>{
     $('#productForm').reset();
     $('#editingProductId').value='';
