@@ -28,6 +28,7 @@ function initials(name = 'User') { return name.split(/\s+/).filter(Boolean).map(
 function escapeHTML(value = '') { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function safeURL(value) { try { const u = new URL(value); return ['http:', 'https:'].includes(u.protocol) ? u.href : '#'; } catch { return '#'; } }
 function profileName() { return currentProfile?.full_name || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Creator'; }
+function isBanned() { return currentProfile?.is_banned === true; }
 
 function bindModalButtons() {
   $$('[data-open]').forEach(btn => btn.onclick = () => $('#' + btn.dataset.open).showModal());
@@ -95,13 +96,15 @@ async function loadProducts() {
 
 async function loadProfile() {
   if (!db || !currentUser) { currentProfile = null; return; }
-  const { data } = await db.from('profiles').select('full_name').eq('id', currentUser.id).maybeSingle();
+  const { data, error } = await db.from('profiles').select('full_name,is_admin,is_banned').eq('id', currentUser.id).maybeSingle();
+  if (error) console.warn('Profile load failed:', error.message);
   currentProfile = data || null;
 }
 
 function openProductModal() {
   if (!isConfigured) { showToast('Configure Supabase in config.js first.'); return; }
   if (!currentUser) { $('#signupModal').showModal(); showToast('Create an account before submitting a product.'); return; }
+  if (isBanned()) { showToast('This account has been blocked from publishing.'); return; }
   $('#productForm').reset();
   $('#descriptionCount').textContent = '0';
   $('#productModal').showModal();
@@ -159,9 +162,11 @@ $('#loginForm').addEventListener('submit', async (e) => {
   showToast('Welcome back!');
 });
 
+
 $('#productForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!db || !currentUser) return showToast('Please log in first.');
+  if (isBanned()) return showToast('This account has been blocked from publishing.');
   const form = e.currentTarget;
   const fd = new FormData(form);
   setBusy(form, true, 'Publishing…');
@@ -210,6 +215,7 @@ document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e =
   if (e.target === d) d.close();
 }));
 
+
 async function initialize() {
   $('#year').textContent = new Date().getFullYear();
   bindModalButtons();
@@ -218,10 +224,12 @@ async function initialize() {
     const { data } = await db.auth.getSession();
     currentUser = data.session?.user || null;
     await loadProfile();
+    if (isBanned()) showToast('This account is blocked from publishing on LaunchBoard.');
     db.auth.onAuthStateChange((_event, session) => {
       setTimeout(async () => {
         currentUser = session?.user || null;
         await loadProfile();
+        if (isBanned()) showToast('This account is blocked from publishing on LaunchBoard.');
         renderHeader();
         renderProducts();
       }, 0);
