@@ -133,9 +133,14 @@ function showAvatarPreview(url){
   clearAvatarPreview();
   if(!url)return;
   const preview=$('#avatarPreview');
+  const wrap=$('#avatarPreviewWrap');
+  preview.onload=()=>{ wrap.hidden=false; };
+  preview.onerror=()=>{
+    clearAvatarPreview();
+    toast('The saved profile picture could not be loaded.');
+  };
   preview.src=url;
   preview.dataset.objectUrl='false';
-  $('#avatarPreviewWrap').hidden=false;
 }
 
 function previewSelectedAvatar(){
