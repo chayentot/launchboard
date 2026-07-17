@@ -1,5 +1,6 @@
 const cats=['Fashion & Clothing','Shoes','Bags & Accessories','Beauty & Cosmetics','Jewelry','Electronics','Software & Apps','Games','Books & eBooks','Courses & Education','Art & Design','Home & Living','Furniture','Food & Drinks','Pet Products','Automotive','Health & Fitness','Toys & Kids','Gifts','Handmade & Crafts','Tools & Hardware','Travel & Services','Other'];
 const PRODUCT_BUCKET='product-images';
+const AVATAR_BUCKET='avatars';
 const MAX_IMAGE_BYTES=5*1024*1024;
 const MAX_TITLE_LENGTH=80;
 const ALLOWED_IMAGE_TYPES=new Set(['image/jpeg','image/png','image/webp','image/gif']);
@@ -43,25 +44,118 @@ async function loadDashboard(){
 
 function fillProfile(){
   if(!currentProfile)return;
-  for(const k of ['full_name','username','bio','avatar_url','website_url','location']){
+  for(const k of ['full_name','username','bio','website_url','location']){
     $('#profileForm').elements[k].value=currentProfile[k]||'';
   }
+  $('#avatarUrl').value=currentProfile.avatar_url||'';
+  showAvatarPreview(currentProfile.avatar_url||'');
 }
 
 async function saveProfile(e){
   e.preventDefault();
-  const f=new FormData(e.target);
-  const {error}=await sb.rpc('update_my_profile',{
-    p_full_name:f.get('full_name'),
-    p_username:f.get('username'),
-    p_bio:f.get('bio'),
-    p_avatar_url:f.get('avatar_url'),
-    p_website_url:f.get('website_url'),
-    p_location:f.get('location')
-  });
-  if(error)return toast(error.message);
-  toast('Profile updated.');
-  setTimeout(()=>location.reload(),500);
+  const form=e.target;
+  const button=form.querySelector('button[type="submit"],button:not([type])');
+  const status=$('#avatarUploadStatus');
+  const f=new FormData(form);
+  const avatarFile=f.get('avatar_file');
+  let avatarUrl=String($('#avatarUrl').value||currentProfile?.avatar_url||'').trim()||null;
+
+  try{
+    button.disabled=true;
+    button.textContent='Saving…';
+
+    if(avatarFile instanceof File && avatarFile.size>0){
+      status.textContent='Uploading profile picture…';
+      avatarUrl=await uploadAvatarImage(avatarFile);
+    }
+
+    status.textContent='Saving profile…';
+    const {error}=await sb.rpc('update_my_profile',{
+      p_full_name:f.get('full_name'),
+      p_username:f.get('username'),
+      p_bio:f.get('bio'),
+      p_avatar_url:avatarUrl,
+      p_website_url:f.get('website_url'),
+      p_location:f.get('location')
+    });
+    if(error)throw error;
+
+    $('#avatarUrl').value=avatarUrl||'';
+    showAvatarPreview(avatarUrl);
+    status.textContent='';
+    toast('Profile updated.');
+    setTimeout(()=>location.reload(),500);
+  }catch(error){
+    console.error(error);
+    status.textContent='';
+    toast(error.message||'Could not update profile.');
+  }finally{
+    button.disabled=false;
+    button.textContent='Save profile';
+  }
+}
+
+async function uploadAvatarImage(file){
+  if(!ALLOWED_IMAGE_TYPES.has(file.type)){
+    throw new Error('Please select a JPG, PNG, WebP, or GIF image.');
+  }
+  if(file.size>MAX_IMAGE_BYTES){
+    throw new Error('The profile picture is larger than 5 MB.');
+  }
+
+  const objectPath=`${currentUser.id}/${Date.now()}-${safeFileName(file.name)}`;
+  const {error}=await sb.storage
+    .from(AVATAR_BUCKET)
+    .upload(objectPath,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+  if(error)throw error;
+
+  const {data}=sb.storage.from(AVATAR_BUCKET).getPublicUrl(objectPath);
+  if(!data?.publicUrl){
+    throw new Error('The picture uploaded, but a public URL could not be created.');
+  }
+  return data.publicUrl;
+}
+
+function clearAvatarPreview(){
+  const preview=$('#avatarPreview');
+  const wrap=$('#avatarPreviewWrap');
+  if(preview?.dataset.objectUrl==='true' && preview.src){
+    URL.revokeObjectURL(preview.src);
+  }
+  if(preview){
+    preview.removeAttribute('src');
+    preview.dataset.objectUrl='false';
+  }
+  if(wrap)wrap.hidden=true;
+}
+
+function showAvatarPreview(url){
+  clearAvatarPreview();
+  if(!url)return;
+  const preview=$('#avatarPreview');
+  preview.src=url;
+  preview.dataset.objectUrl='false';
+  $('#avatarPreviewWrap').hidden=false;
+}
+
+function previewSelectedAvatar(){
+  clearAvatarPreview();
+  const file=this.files?.[0];
+  if(!file)return;
+
+  if(!ALLOWED_IMAGE_TYPES.has(file.type)){
+    this.value='';
+    return toast('Please select a JPG, PNG, WebP, or GIF image.');
+  }
+  if(file.size>MAX_IMAGE_BYTES){
+    this.value='';
+    return toast('The profile picture is larger than 5 MB.');
+  }
+
+  const preview=$('#avatarPreview');
+  preview.src=URL.createObjectURL(file);
+  preview.dataset.objectUrl='true';
+  $('#avatarPreviewWrap').hidden=false;
 }
 
 function safeFileName(name){
@@ -297,6 +391,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   $('#closeProductModal').onclick=closeProductModal;
   $('#cancelProductEdit').onclick=closeProductModal;
   $('#profileForm').onsubmit=saveProfile;
+  $('#avatarFile').addEventListener('change',previewSelectedAvatar);
   $('#productForm').onsubmit=saveProduct;
   $('#productImageFile').onchange=previewSelectedImage;
   $('#productForm').elements.title.addEventListener('input',updateProductTitleCount);

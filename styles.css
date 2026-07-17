@@ -190,3 +190,22 @@
     height: 500px !important;
   }
 }
+
+.avatar-preview-wrap{
+  display:flex;
+  justify-content:center;
+  padding:12px;
+  border:1px dashed #cfd4e6;
+  border-radius:16px;
+  background:#f7f8fc;
+}
+.avatar-preview{
+  width:150px;
+  height:150px;
+  border-radius:50%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+  border:4px solid #fff;
+  box-shadow:0 6px 18px rgba(20,24,45,.12);
+}
