@@ -1,5 +1,22 @@
-# LaunchBoard V4 Stable
+# LaunchBoard V4.1 Rebuilt
 
-A consolidated Supabase-backed product discovery marketplace.
+A Supabase-backed product-discovery marketplace with open publishing.
 
-Includes open publishing, image uploads, creator profiles, product editing/deletion, likes, reviews, follows, messaging, notifications, analytics, verified creators, premium listings, and a hidden admin page.
+Included features:
+
+- Product and avatar file uploads
+- Full portrait product images without cropping
+- Creator product editing and deletion
+- Creator profiles, follows, likes and reviews
+- Product detail pages
+- Messaging and notifications
+- Creator analytics
+- Verified creators and premium listings
+- Hidden administrator dashboard
+- User banning and spam-product deletion
+- Search and category filtering
+- Stable authentication without page-refresh loops
+- Safe external-link handling
+- Visible error prompts
+
+See `INSTALL.md` for deployment instructions.

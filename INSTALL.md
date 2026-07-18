@@ -1,10 +1,45 @@
-# Install LaunchBoard V4
+# LaunchBoard V4.1 installation
 
-1. Back up your current GitHub repository.
-2. In Supabase SQL Editor, run `supabase-v4-migration.sql` in a new query. If a policy-already-exists error appears from an older V3 policy, send the exact policy name; do not delete tables.
-3. Upload every `.html`, `.js`, and `styles.css` file from this package to the repository root.
-4. Keep your existing `config.js` with your Supabase URL and publishable key.
-5. Commit and wait for GitHub Pages. Open `https://chayentot.github.io/launchboard/?v=4`.
-6. Admin remains at `/launchboard/admin.html` and is not linked publicly.
+## Before replacing files
 
-Important: V4 never reloads the page for Supabase `INITIAL_SESSION`, so the authentication refresh loop is removed.
+Keep a copy of your current `config.js`; it contains your real Supabase URL and publishable key.
+
+## 1. Run the database migration
+
+In Supabase:
+
+1. Open **SQL Editor**.
+2. Select **New query**.
+3. Paste all of `supabase-v4.1-migration.sql`.
+4. Click **Run**.
+
+The migration preserves existing users and products and can be run more than once.
+
+## 2. Make your account an administrator
+
+After your account exists, run:
+
+```sql
+update public.profiles
+set is_admin=true
+where id=(
+  select id from auth.users
+  where lower(email)=lower('tantanplays@gmail.com')
+);
+```
+
+## 3. Replace GitHub files
+
+Upload every HTML and JavaScript file plus `styles.css` from this package to the repository root.
+
+Do not replace your working `config.js` with the placeholder from this ZIP.
+
+## 4. Refresh
+
+After GitHub Pages deploys, open:
+
+`https://chayentot.github.io/launchboard/?v=4.1`
+
+Private admin page:
+
+`https://chayentot.github.io/launchboard/admin.html?v=4.1`
