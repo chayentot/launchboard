@@ -16,6 +16,23 @@ function esc(value=''){
   })[char]);
 }
 
+
+function formatPeso(value){
+  const raw=String(value??'').trim();
+  if(!raw)return 'Contact for price';
+  if(/^₱/.test(raw))return raw;
+  const cleaned=raw.replace(/[,\s]/g,'').replace(/^(php|PHP)/,'');
+  if(/^\d+(\.\d{1,2})?$/.test(cleaned)){
+    return new Intl.NumberFormat('en-PH',{
+      style:'currency',
+      currency:'PHP',
+      minimumFractionDigits:Number(cleaned)%1===0?0:2,
+      maximumFractionDigits:2
+    }).format(Number(cleaned));
+  }
+  return raw;
+}
+
 function safeUrl(value,fallback='#'){
   try{
     const url=new URL(String(value||''),location.href);

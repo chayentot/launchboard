@@ -14,19 +14,21 @@ function productCard(product){
 
   return `
     <article class="card product">
-      <a class="product-media" href="product.html?id=${encodeURIComponent(product.id)}">${image}</a>
-      <div class="product-body">
+      <div class="product-card-heading">
         <div class="row between product-meta">
           <span>${esc(product.category||'Other')}</span>
-          <strong>${esc(product.price||'View price')}</strong>
+          ${product.is_premium?'<span class="premium-pill">Premium</span>':''}
         </div>
         <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${esc(product.title)}</a></h3>
+        <strong class="product-price">${esc(formatPeso(product.price))}</strong>
+      </div>
+      <a class="product-media" href="product.html?id=${encodeURIComponent(product.id)}">${image}</a>
+      <div class="product-body">
         <p class="muted">by <a href="creator.html?id=${encodeURIComponent(product.owner_id)}">${esc(creator.full_name||product.creator||'Creator')}</a> ${badge(creator)}</p>
         <div class="product-signals">
           <span>♡ ${likeCounts[product.id]||0}</span>
           <span>↗ ${product.clicks||0}</span>
           <span>◉ ${product.views||0}</span>
-          ${product.is_premium?'<span class="premium-pill">Premium</span>':''}
         </div>
       </div>
     </article>`;
