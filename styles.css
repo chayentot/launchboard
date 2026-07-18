@@ -273,3 +273,58 @@
     flex-basis: 104px !important;
   }
 }
+
+/* Highly visible toast and error messages */
+.toast,
+#toast,
+.toast-message,
+.notification-toast {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 28px !important;
+  top: auto !important;
+  transform: translateX(-50%) !important;
+  width: min(92vw, 520px) !important;
+  box-sizing: border-box !important;
+  padding: 16px 20px !important;
+  border-radius: 14px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  text-align: center !important;
+  color: #fff !important;
+  background: #b42318 !important;
+  border: 2px solid rgba(255,255,255,.9) !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,.35) !important;
+  pointer-events: auto !important;
+}
+
+dialog { z-index: 10000; }
+dialog::backdrop { z-index: 9999; }
+
+.auth-error-message {
+  display: none;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff1f0;
+  border: 1px solid #f04438;
+  color: #912018;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.auth-error-message.visible { display: block; }
+
+@media (max-width: 600px) {
+  .toast,
+  #toast,
+  .toast-message,
+  .notification-toast {
+    bottom: 16px !important;
+    width: calc(100vw - 24px) !important;
+    padding: 14px 16px !important;
+  }
+}
