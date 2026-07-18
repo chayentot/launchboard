@@ -9,6 +9,38 @@ const sb=(window.supabase&&cfg.supabaseUrl&&cfg.supabaseKey)
 let currentUser=null;
 let currentProfile=null;
 let authReady=false;
+function formatPeso(value) {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+
+  const text = String(value).trim();
+
+  // Preserve non-numeric labels and prices already containing ₱.
+  if (
+    text.includes("₱") ||
+    text.toLowerCase() === "free" ||
+    text.toLowerCase() === "contact seller"
+  ) {
+    return text;
+  }
+
+  // Accept values containing commas.
+  const number = Number(text.replace(/,/g, ""));
+
+  if (!Number.isFinite(number)) {
+    return text;
+  }
+
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    minimumFractionDigits: Number.isInteger(number) ? 0 : 2,
+    maximumFractionDigits: 2
+  }).format(number);
+}
+
+window.formatPeso = formatPeso;
 
 function esc(value=''){
   return String(value).replace(/[&<>"']/g,char=>({
