@@ -137,3 +137,9 @@
   .section-heading{align-items:start;flex-direction:column}
   .cta-card{align-items:flex-start;flex-direction:column}
 }
+
+.report-area{margin-top:18px;text-align:right}
+.danger-link{color:#b42318!important}
+.legal-page{padding:clamp(24px,5vw,56px);max-width:900px;margin:auto}
+.legal-page h2{margin-top:2rem}
+.narrow{max-width:900px}

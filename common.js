@@ -161,10 +161,75 @@ async function signupSubmit(event){
   toast('Account created. Check your email if confirmation is enabled.','success');
 }
 
+
+function openReportDialog(targetType,targetId){
+  if(!currentUser)return toast('Please log in before submitting a report.');
+  $('#reportTargetType').value=targetType;
+  $('#reportTargetId').value=targetId;
+  $('#reportModal').showModal();
+}
+
+async function submitReport(event){
+  event.preventDefault();
+  const form=event.currentTarget;
+  const data=new FormData(form);
+  const {error}=await sb.from('reports').insert({
+    reporter_id:currentUser.id,
+    target_type:data.get('target_type'),
+    target_id:data.get('target_id'),
+    reason:data.get('reason'),
+    details:String(data.get('details')||'').trim()
+  });
+  if(error)return toast(error.message);
+  form.reset();
+  $('#reportModal').close();
+  toast('Report submitted for review.','success');
+}
+
+async function requestPasswordReset(event){
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const redirectTo=new URL('reset-password.html',location.href).href;
+  const {error}=await sb.auth.resetPasswordForEmail(String(data.get('email')||'').trim(),{redirectTo});
+  if(error)return toast(error.message);
+  $('#forgotPasswordModal').close();
+  toast('Password reset email sent.','success');
+}
+
+async function updatePassword(event){
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const {error}=await sb.auth.updateUser({password:String(data.get('password')||'')});
+  if(error)return toast(error.message);
+  $('#newPasswordModal').close();
+  toast('Password updated successfully.','success');
+  setTimeout(()=>location.href='index.html',900);
+}
+
+function installExternalLinkWarning(){
+  document.addEventListener('click',event=>{
+    const link=event.target.closest('a[href]');
+    if(!link)return;
+    const url=safeUrl(link.href,'');
+    if(!url)return;
+    const parsed=new URL(url);
+    if(parsed.origin===location.origin)return;
+    if(link.dataset.noWarning==='true')return;
+    const confirmed=window.confirm('You are leaving LaunchBoard and opening an external website. Continue?');
+    if(!confirmed)event.preventDefault();
+  });
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
   boot();
   $('#loginForm')?.addEventListener('submit',loginSubmit);
   $('#signupForm')?.addEventListener('submit',signupSubmit);
+  $('#reportForm')?.addEventListener('submit',submitReport);
+  $('#forgotPasswordForm')?.addEventListener('submit',requestPasswordReset);
+  $('#newPasswordForm')?.addEventListener('submit',updatePassword);
+  $('#forgotPasswordButton')?.addEventListener('click',()=>{$('#loginModal')?.close();$('#forgotPasswordModal')?.showModal();});
+  $$('[data-close-dialog]').forEach(button=>button.onclick=()=>button.closest('dialog')?.close());
+  installExternalLinkWarning();
   $$('dialog').forEach(dialog=>{
     dialog.addEventListener('click',event=>{
       if(event.target===dialog)dialog.close();

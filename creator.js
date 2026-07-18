@@ -5,3 +5,12 @@ function renderCreator(followers){$('#creatorPage').innerHTML=`<section class="c
 async function toggleFollow(){if(!currentUser)return $('#loginModal').showModal();if(following)await sb.from('creator_follows').delete().eq('follower_id',currentUser.id).eq('creator_id',creatorId);else await sb.from('creator_follows').insert({follower_id:currentUser.id,creator_id:creatorId});following=!following;loadCreator()}
 async function message(){if(!currentUser)return $('#loginModal').showModal();const {data,error}=await sb.rpc('start_conversation',{target_user:creatorId,target_product:null});if(error)return toast(error.message);location.href=`messages.html?conversation=${data}`}
 window.addEventListener('DOMContentLoaded',()=>{document.addEventListener('launchboard:auth-ready',loadCreator,{once:true});if(authReady)loadCreator()});
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const creatorId=new URLSearchParams(location.search).get('id');
+  const button=$('#reportCreator');
+  if(button&&creatorId){
+    button.hidden=false;
+    button.onclick=()=>openReportDialog('creator',creatorId);
+  }
+});

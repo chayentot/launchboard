@@ -7,3 +7,26 @@ async function premium(id,v){const {error}=await sb.rpc('admin_set_premium',{tar
 async function banUser(id,v){const {error}=await sb.rpc('admin_set_user_banned',{target_user_id:id,banned:v});if(error)return toast(error.message);loadAdmin()}
 async function removeProduct(id){if(!confirm('Delete this product permanently?'))return;const {error}=await sb.from('products').delete().eq('id',id);if(error)return toast(error.message);loadAdmin()}
 window.verifyUser=verifyUser;window.premium=premium;window.banUser=banUser;window.removeProduct=removeProduct;window.addEventListener('DOMContentLoaded',()=>{$('#userSearch').oninput=renderUsers;$('#productSearch').oninput=renderProducts;document.addEventListener('launchboard:auth-ready',loadAdmin,{once:true});if(authReady)loadAdmin()});
+
+async function loadReports(){
+  const container=$('#adminReports');
+  if(!container)return;
+  const {data,error}=await sb.rpc('admin_list_reports');
+  if(error){container.innerHTML=`<p class="muted">${esc(error.message)}</p>`;return}
+  container.innerHTML=(data||[]).map(report=>`
+    <div class="review row between">
+      <div>
+        <strong>${esc(report.reason)} · ${esc(report.target_type)}</strong>
+        <p>${esc(report.details)}</p>
+        <span class="muted">${esc(report.reporter_email||'Unknown reporter')} · ${new Date(report.created_at).toLocaleString()}</span>
+      </div>
+      <button class="btn btn-ghost" data-resolve-report="${report.id}" type="button">Resolve</button>
+    </div>`).join('')||'<p class="muted">No open reports.</p>';
+  $$('[data-resolve-report]').forEach(button=>button.onclick=async()=>{
+    const {error}=await sb.rpc('admin_resolve_report',{target_report:button.dataset.resolveReport});
+    if(error)return toast(error.message);
+    toast('Report resolved.','success');
+    loadReports();
+  });
+}
+window.addEventListener('DOMContentLoaded',()=>setTimeout(loadReports,500));

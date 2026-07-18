@@ -5,3 +5,11 @@ async function toggleLike(){if(!currentUser)return $('#loginModal').showModal();
 async function review(e){e.preventDefault();const f=new FormData(e.target);const {error}=await sb.from('product_reviews').upsert({product_id:id,author_id:currentUser.id,rating:+f.get('rating'),body:f.get('body')},{onConflict:'product_id,author_id'});if(error)return toast(error.message);loadProduct()}
 async function startChat(){if(!currentUser)return $('#loginModal').showModal();const {data,error}=await sb.rpc('start_conversation',{target_user:owner.id,target_product:id});if(error)return toast(error.message);location.href=`messages.html?conversation=${data}`}
 window.addEventListener('DOMContentLoaded',()=>{document.addEventListener('launchboard:auth-ready',loadProduct,{once:true});if(authReady)loadProduct()});
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const button=$('#reportProduct');
+  if(button){
+    button.hidden=false;
+    button.onclick=()=>openReportDialog('product',id);
+  }
+});
