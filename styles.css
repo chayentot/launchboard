@@ -341,3 +341,113 @@
   }
 }
 
+/* =========================================================
+   V4.6 GRID CONTAINER SELECTOR FIX
+   Covers the product-list container names used by LaunchBoard.
+   ========================================================= */
+
+.grid,
+#productGrid,
+#productsGrid,
+#product-grid,
+#products-grid,
+#productsContainer,
+#products-container,
+#productList,
+#product-list,
+.products-grid,
+.product-grid,
+.products-list {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+}
+
+/* Prevent a generated product wrapper from occupying its own full row */
+.grid > *,
+#productGrid > *,
+#productsGrid > *,
+#product-grid > *,
+#products-grid > *,
+#productsContainer > *,
+#products-container > *,
+#productList > *,
+#product-list > *,
+.products-grid > *,
+.product-grid > *,
+.products-list > * {
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+/* Make card links fill their grid cell without forcing full-page width */
+.grid > a,
+#productGrid > a,
+#productsGrid > a,
+#product-grid > a,
+#products-grid > a,
+#productsContainer > a,
+#products-container > a,
+#productList > a,
+#product-list > a,
+.products-grid > a,
+.product-grid > a,
+.products-list > a {
+  display: block !important;
+}
+
+@media (max-width: 1100px) {
+  .grid,
+  #productGrid,
+  #productsGrid,
+  #product-grid,
+  #products-grid,
+  #productsContainer,
+  #products-container,
+  #productList,
+  #product-list,
+  .products-grid,
+  .product-grid,
+  .products-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .grid,
+  #productGrid,
+  #productsGrid,
+  #product-grid,
+  #products-grid,
+  #productsContainer,
+  #products-container,
+  #productList,
+  #product-list,
+  .products-grid,
+  .product-grid,
+  .products-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 370px) {
+  .grid,
+  #productGrid,
+  #productsGrid,
+  #product-grid,
+  #products-grid,
+  #productsContainer,
+  #products-container,
+  #productList,
+  #product-list,
+  .products-grid,
+  .product-grid,
+  .products-list {
+    grid-template-columns: 1fr !important;
+  }
+}
+
