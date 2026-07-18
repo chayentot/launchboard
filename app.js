@@ -1,7 +1,226 @@
-const categories=['Fashion & Clothing','Shoes','Bags & Accessories','Beauty & Cosmetics','Jewelry','Electronics','Software & Apps','Games','Books & eBooks','Courses & Education','Art & Design','Home & Living','Furniture','Food & Drinks','Pet Products','Automotive','Health & Fitness','Toys & Kids','Gifts','Handmade & Crafts','Tools & Hardware','Travel & Services','Other'];let products=[],profiles=[],likes=[],reviews=[];
-function card(p){const owner=profiles.find(x=>x.id===p.owner_id)||{};const lc=likes.filter(x=>x.product_id===p.id).length;const rs=reviews.filter(x=>x.product_id===p.id);const avg=rs.length?(rs.reduce((a,b)=>a+b.rating,0)/rs.length).toFixed(1):'New';return `<article class="card product"><a href="product.html?id=${p.id}"><div class="product-media">${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.title)}" onerror="this.style.display='none'">`:'<div class="muted">No image</div>'}${p.is_premium?'<span class="badge premium">Premium</span>':p.is_featured?'<span class="badge">Featured</span>':''}</div></a><div class="product-body"><div class="row between"><span class="muted">${esc(p.category)}</span><strong>${esc(p.price||'View price')}</strong></div><h3><a href="product.html?id=${p.id}">${esc(p.title)}</a></h3><a class="creator" href="creator.html?id=${p.owner_id}">by ${esc(owner.full_name||p.creator)} ${badge(owner)}</a><div class="stats"><span>♡ ${lc}</span><span>★ ${avg}</span><span>↗ ${p.clicks||0}</span><span>◉ ${p.views||0}</span></div></div></article>`}
-function creatorCard(p){const count=products.filter(x=>x.owner_id===p.id).length;return `<article class="card pad"><div class="profile-head"><img class="avatar" src="${esc(p.avatar_url||'https://placehold.co/160x160?text=Creator')}" alt=""><div><h3>${esc(p.full_name||p.username)} ${badge(p)}</h3><p class="muted">${esc(p.location||'Independent creator')}</p><a class="btn btn-soft" href="creator.html?id=${p.id}">View profile</a></div></div><p>${esc((p.bio||'Discover products from this creator.').slice(0,140))}</p><strong>${count} product${count===1?'':'s'}</strong></article>`}
-async function load(){if(!sb)return toast('Add your Supabase details to config.js.');const [p,pr,l,r]=await Promise.all([sb.from('products').select('*').eq('is_published',true),sb.from('profiles').select('*').eq('is_banned',false),sb.from('product_likes').select('*'),sb.from('product_reviews').select('product_id,rating')]);if(p.error)return toast(p.error.message);products=p.data||[];profiles=pr.data||[];likes=l.data||[];reviews=r.data||[];render();}
-function render(){const q=$('#search').value.toLowerCase().trim(),cat=$('#category').value,sort=$('#sort').value;let list=products.filter(p=>(cat==='all'||p.category===cat)&&[p.title,p.description,p.creator,p.brand,p.category,(p.tags||[]).join(' '),(profiles.find(x=>x.id===p.owner_id)||{}).full_name].join(' ').toLowerCase().includes(q));if(sort==='popular')list.sort((a,b)=>(b.clicks+b.views)-(a.clicks+a.views));else if(sort==='liked')list.sort((a,b)=>likes.filter(x=>x.product_id===b.id).length-likes.filter(x=>x.product_id===a.id).length);else if(sort==='rated')list.sort((a,b)=>avg(b.id)-avg(a.id));else list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));$('#productGrid').innerHTML=list.map(card).join('')||'<p>No products found.</p>';const featured=products.filter(p=>p.is_premium||p.is_featured).slice(0,6);$('#featuredGrid').innerHTML=(featured.length?featured:products.slice(0,3)).map(card).join('');$('#creatorGrid').innerHTML=profiles.filter(p=>products.some(x=>x.owner_id===p.id)).slice(0,6).map(creatorCard).join('');$('#heroProducts').textContent=products.length;$('#heroCreators').textContent=new Set(products.map(x=>x.owner_id)).size;$('#heroLikes').textContent=likes.length;$('#heroReviews').textContent=reviews.length;}
-function avg(id){const a=reviews.filter(x=>x.product_id===id);return a.length?a.reduce((s,x)=>s+x.rating,0)/a.length:0}
-window.addEventListener('DOMContentLoaded',()=>{$('#year').textContent=new Date().getFullYear();categories.forEach(c=>{$('#category').insertAdjacentHTML('beforeend',`<option>${c}</option>`);$('#categoryChips').insertAdjacentHTML('beforeend',`<button class="chip" data-cat="${esc(c)}">${esc(c)}</button>`)});$('#search').oninput=render;$('#category').onchange=render;$('#sort').onchange=render;$$('[data-cat]').forEach(x=>x.onclick=()=>{$('#category').value=x.dataset.cat;render()});$('#submitProduct').onclick=()=>location.href=currentUser?'dashboard.html#submit':'#';document.addEventListener('launchboard:auth-ready',load,{once:true});if(authReady)load()});
+const PAGE_SIZE=12;
+let allProducts=[];
+let visibleCount=PAGE_SIZE;
+let likeCounts={};
+let creatorsById={};
+
+const categories=['Fashion & Clothing','Shoes','Bags & Accessories','Beauty & Cosmetics','Jewelry','Electronics','Software & Apps','Games','Books & eBooks','Courses & Education','Art & Design','Home & Living','Furniture','Food & Drinks','Pet Products','Automotive','Health & Fitness','Toys & Kids','Gifts','Handmade & Crafts','Tools & Hardware','Travel & Services','Other'];
+
+function productCard(product){
+  const creator=creatorsById[product.owner_id]||{};
+  const image=product.image_url
+    ? `<img src="${esc(safeUrl(product.image_url,''))}" alt="${esc(product.title)}" loading="lazy">`
+    : `<div class="image-placeholder">No image</div>`;
+
+  return `
+    <article class="card product">
+      <a class="product-media" href="product.html?id=${encodeURIComponent(product.id)}">${image}</a>
+      <div class="product-body">
+        <div class="row between product-meta">
+          <span>${esc(product.category||'Other')}</span>
+          <strong>${esc(product.price||'View price')}</strong>
+        </div>
+        <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${esc(product.title)}</a></h3>
+        <p class="muted">by <a href="creator.html?id=${encodeURIComponent(product.owner_id)}">${esc(creator.full_name||product.creator||'Creator')}</a> ${badge(creator)}</p>
+        <div class="product-signals">
+          <span>♡ ${likeCounts[product.id]||0}</span>
+          <span>↗ ${product.clicks||0}</span>
+          <span>◉ ${product.views||0}</span>
+          ${product.is_premium?'<span class="premium-pill">Premium</span>':''}
+        </div>
+      </div>
+    </article>`;
+}
+
+function creatorCard(profile,stats={}){
+  const avatar=profile.avatar_url
+    ? `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="${esc(profile.full_name||'Creator')}" loading="lazy">`
+    : `<div class="avatar-fallback">${esc((profile.full_name||profile.username||'?').slice(0,1).toUpperCase())}</div>`;
+  return `
+    <a class="card creator-card" href="creator.html?id=${encodeURIComponent(profile.id)}">
+      <div class="creator-avatar">${avatar}</div>
+      <div>
+        <h3>${esc(profile.full_name||profile.username||'Creator')} ${badge(profile)}</h3>
+        <p class="muted">${esc(profile.bio||profile.location||'Independent creator')}</p>
+        <div class="creator-signals"><span>${stats.products||0} products</span><span>${stats.followers||0} followers</span></div>
+      </div>
+    </a>`;
+}
+
+async function fetchDiscoveryData(){
+  if(!sb){
+    $('#productGrid').innerHTML='<div class="card empty-state"><h3>Supabase is not configured.</h3></div>';
+    return;
+  }
+
+  const [productsResult,profilesResult,likesResult,reviewsResult,followsResult]=await Promise.all([
+    sb.from('products').select('*').eq('is_published',true).order('created_at',{ascending:false}),
+    sb.from('profiles').select('*').eq('is_banned',false),
+    sb.from('product_likes').select('product_id'),
+    sb.from('product_reviews').select('product_id'),
+    sb.from('creator_follows').select('creator_id')
+  ]);
+
+  if(productsResult.error)return toast(productsResult.error.message);
+  if(profilesResult.error)return toast(profilesResult.error.message);
+
+  allProducts=productsResult.data||[];
+  creatorsById=Object.fromEntries((profilesResult.data||[]).map(profile=>[profile.id,profile]));
+
+  likeCounts=(likesResult.data||[]).reduce((map,row)=>{
+    map[row.product_id]=(map[row.product_id]||0)+1;
+    return map;
+  },{});
+
+  renderHomeStats(profilesResult.data||[],reviewsResult.data||[]);
+  renderCategoryControls();
+  renderFeatured();
+  renderProducts();
+  renderCreators(profilesResult.data||[],followsResult.data||[]);
+}
+
+function renderHomeStats(profiles,reviews){
+  const values=[
+    allProducts.length,
+    profiles.length,
+    new Set(allProducts.map(p=>p.category).filter(Boolean)).size,
+    reviews.length
+  ];
+  $$('#homeStats strong').forEach((el,index)=>el.textContent=values[index]||0);
+}
+
+function renderCategoryControls(){
+  const select=$('#categoryFilter');
+  categories.forEach(category=>select.insertAdjacentHTML('beforeend',`<option value="${esc(category)}">${esc(category)}</option>`));
+
+  const popular=[...new Set(allProducts.map(p=>p.category).filter(Boolean))].slice(0,10);
+  $('#categoryChips').innerHTML=[
+    '<button class="chip active" type="button" data-category="">All</button>',
+    ...popular.map(category=>`<button class="chip" type="button" data-category="${esc(category)}">${esc(category)}</button>`)
+  ].join('');
+}
+
+function filteredProducts(){
+  const query=$('#searchInput').value.trim().toLowerCase();
+  const category=$('#categoryFilter').value;
+  const type=$('#typeFilter').value;
+  const sort=$('#sortFilter').value;
+
+  let rows=allProducts.filter(product=>{
+    const creator=creatorsById[product.owner_id]||{};
+    const haystack=[
+      product.title,product.description,product.brand,product.creator,
+      product.category,product.country,product.product_type,
+      ...(Array.isArray(product.tags)?product.tags:[]),
+      creator.full_name,creator.username
+    ].join(' ').toLowerCase();
+
+    return (!query||haystack.includes(query))
+      && (!category||product.category===category)
+      && (!type||product.product_type===type);
+  });
+
+  rows.sort((a,b)=>{
+    if(sort==='popular')return (b.views||0)-(a.views||0);
+    if(sort==='clicked')return (b.clicks||0)-(a.clicks||0);
+    if(sort==='liked')return (likeCounts[b.id]||0)-(likeCounts[a.id]||0);
+    if(sort==='premium')return Number(b.is_premium)-Number(a.is_premium)||new Date(b.created_at)-new Date(a.created_at);
+    return new Date(b.created_at)-new Date(a.created_at);
+  });
+
+  return rows;
+}
+
+function renderProducts(){
+  const products=filteredProducts();
+  const visible=products.slice(0,visibleCount);
+
+  $('#productGrid').innerHTML=visible.map(productCard).join('');
+  $('#emptyProducts').hidden=products.length>0;
+  $('#loadMore').hidden=visible.length>=products.length;
+  $('#resultSummary').textContent=`${products.length} product${products.length===1?'':'s'} found`;
+
+  const selected=$('#categoryFilter').value;
+  $$('#categoryChips .chip').forEach(chip=>chip.classList.toggle('active',chip.dataset.category===selected));
+}
+
+function renderFeatured(){
+  const products=allProducts
+    .filter(product=>product.is_premium||product.is_featured)
+    .sort((a,b)=>Number(b.is_premium)-Number(a.is_premium)||(b.views||0)-(a.views||0))
+    .slice(0,4);
+
+  $('#featuredSection').hidden=products.length===0;
+  $('#featuredProducts').innerHTML=products.map(productCard).join('');
+}
+
+function renderCreators(profiles,follows){
+  const followerCounts=(follows||[]).reduce((map,row)=>{
+    map[row.creator_id]=(map[row.creator_id]||0)+1;
+    return map;
+  },{});
+
+  const productCounts=allProducts.reduce((map,row)=>{
+    map[row.owner_id]=(map[row.owner_id]||0)+1;
+    return map;
+  },{});
+
+  const ranked=profiles
+    .filter(profile=>productCounts[profile.id])
+    .sort((a,b)=>
+      Number(b.is_verified)-Number(a.is_verified)
+      ||(followerCounts[b.id]||0)-(followerCounts[a.id]||0)
+      ||(productCounts[b.id]||0)-(productCounts[a.id]||0)
+    )
+    .slice(0,6);
+
+  $('#topCreators').innerHTML=ranked.map(profile=>creatorCard(profile,{
+    products:productCounts[profile.id]||0,
+    followers:followerCounts[profile.id]||0
+  })).join('')||'<div class="card empty-state"><p>No creators yet.</p></div>';
+}
+
+function clearFilters(){
+  $('#searchInput').value='';
+  $('#categoryFilter').value='';
+  $('#typeFilter').value='';
+  $('#sortFilter').value='newest';
+  visibleCount=PAGE_SIZE;
+  renderProducts();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  $('#searchInput').addEventListener('input',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  $('#categoryFilter').addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  $('#typeFilter').addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  $('#sortFilter').addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  $('#clearFilters').onclick=clearFilters;
+  $('#emptyClear').onclick=clearFilters;
+  $('#loadMore').onclick=()=>{visibleCount+=PAGE_SIZE;renderProducts()};
+
+  $('#categoryChips').addEventListener('click',event=>{
+    const chip=event.target.closest('[data-category]');
+    if(!chip)return;
+    $('#categoryFilter').value=chip.dataset.category;
+    visibleCount=PAGE_SIZE;
+    renderProducts();
+  });
+
+  $('#heroSearchForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    $('#searchInput').value=$('#heroSearch').value;
+    visibleCount=PAGE_SIZE;
+    renderProducts();
+    $('#discover').scrollIntoView({behavior:'smooth'});
+  });
+
+  $$('[data-sort-shortcut]').forEach(button=>{
+    button.onclick=()=>{
+      $('#sortFilter').value=button.dataset.sortShortcut;
+      renderProducts();
+      $('#discover').scrollIntoView({behavior:'smooth'});
+    };
+  });
+
+  fetchDiscoveryData();
+});

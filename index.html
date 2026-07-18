@@ -1,9 +1,113 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LaunchBoard — Discover products and creators</title><meta name="description" content="Discover products from independent creators and brands."><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script defer src="common.js"></script><script defer src="app.js"></script></head><body>
 <header class="topbar"><div class="container nav"><a class="brand" href="index.html">Launch<span>Board</span></a><nav class="navlinks"><a href="#discover">Discover</a><a href="#creators">Creators</a><a href="#featured">Premium</a></nav><div class="actions" id="navActions"></div></div></header>
 <section class="hero"><div class="container hero-grid"><div><span class="eyebrow">Product discovery, powered by creators</span><h1>Find your next favorite thing.</h1><p>Explore fashion, digital tools, games, handmade goods, services and more. Follow creators, save products, review discoveries, and contact sellers directly.</p><div class="row"><a class="btn btn-primary" href="#discover">Explore products</a><button class="btn btn-soft" id="submitProduct">List a product</button></div></div><aside class="hero-card"><h3>What is trending</h3><div class="metrics"><div class="metric"><strong id="heroProducts">—</strong><span>Products</span></div><div class="metric"><strong id="heroCreators">—</strong><span>Creators</span></div><div class="metric"><strong id="heroLikes">—</strong><span>Likes</span></div><div class="metric"><strong id="heroReviews">—</strong><span>Reviews</span></div></div></aside></div></section>
-<main><section class="section" id="featured"><div class="container"><div class="section-head"><div><span class="eyebrow">Premium showcase</span><h2>Featured discoveries</h2></div><span class="muted">Premium placement is controlled by the LaunchBoard team.</span></div><div class="grid" id="featuredGrid"></div></div></section>
-<section class="section" id="discover"><div class="container"><div class="section-head"><div><h2>Discover products</h2><p class="muted">Search titles, descriptions, brands, creators, categories and tags.</p></div></div><div class="chips" id="categoryChips"></div><div class="toolbar"><input class="field" id="search" placeholder="Search products, brands, creators or tags"><select class="field" id="category"><option value="all">All categories</option></select><select class="field" id="sort"><option value="new">Newest</option><option value="popular">Most popular</option><option value="liked">Most liked</option><option value="rated">Best rated</option></select></div><div class="grid" id="productGrid"></div></div></section>
-<section class="section" id="creators"><div class="container"><div class="section-head"><div><h2>Creators to follow</h2><p class="muted">Discover people and brands behind the products.</p></div></div><div class="grid" id="creatorGrid"></div></div></section></main>
+
+<main>
+  <section class="hero hero-pro">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">Discover independent products</span>
+        <h1>Find something useful, original, or unexpectedly brilliant.</h1>
+        <p class="hero-copy">Explore products, services, tools, fashion, games, courses, handmade goods, and more—directly from creators.</p>
+        <form id="heroSearchForm" class="hero-search" role="search">
+          <input id="heroSearch" type="search" placeholder="Search products, brands, creators, or tags" aria-label="Search products">
+          <button class="btn btn-primary" type="submit">Search</button>
+        </form>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#discover">Explore products</a>
+          <a class="btn btn-ghost" href="dashboard.html">List your product</a>
+        </div>
+      </div>
+      <aside class="hero-stats card">
+        <span class="eyebrow">LaunchBoard today</span>
+        <div class="stats-grid" id="homeStats">
+          <div><strong>—</strong><span>Products</span></div>
+          <div><strong>—</strong><span>Creators</span></div>
+          <div><strong>—</strong><span>Categories</span></div>
+          <div><strong>—</strong><span>Reviews</span></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section" id="featuredSection">
+    <div class="container">
+      <div class="section-heading">
+        <div><span class="eyebrow">Premium showcase</span><h2>Featured discoveries</h2></div>
+        <button class="text-button" data-sort-shortcut="premium">View premium</button>
+      </div>
+      <div class="product-grid" id="featuredProducts"></div>
+    </div>
+  </section>
+
+  <section class="section muted-section" id="discover">
+    <div class="container">
+      <div class="section-heading">
+        <div><span class="eyebrow">Explore LaunchBoard</span><h2>Discover products</h2></div>
+        <p id="resultSummary" class="muted"></p>
+      </div>
+
+      <div class="discovery-toolbar card">
+        <label class="search-field">
+          <span class="sr-only">Search products</span>
+          <input id="searchInput" type="search" placeholder="Search title, description, brand, creator, tags…">
+        </label>
+        <select id="categoryFilter" aria-label="Filter by category">
+          <option value="">All categories</option>
+        </select>
+        <select id="typeFilter" aria-label="Filter by product type">
+          <option value="">All types</option>
+          <option>Physical</option>
+          <option>Digital</option>
+          <option>Service</option>
+        </select>
+        <select id="sortFilter" aria-label="Sort products">
+          <option value="newest">Newest</option>
+          <option value="popular">Most viewed</option>
+          <option value="clicked">Most clicked</option>
+          <option value="liked">Most liked</option>
+          <option value="premium">Premium first</option>
+        </select>
+        <button class="btn btn-ghost" id="clearFilters" type="button">Clear</button>
+      </div>
+
+      <div class="category-chips" id="categoryChips"></div>
+      <div class="product-grid" id="productGrid"></div>
+
+      <div class="empty-state card" id="emptyProducts" hidden>
+        <h3>No matching products</h3>
+        <p>Try a broader search or clear the active filters.</p>
+        <button class="btn btn-primary" id="emptyClear" type="button">Clear filters</button>
+      </div>
+
+      <div class="center">
+        <button class="btn btn-ghost" id="loadMore" type="button" hidden>Load more</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <div><span class="eyebrow">People to discover</span><h2>Top creators</h2></div>
+        <a class="text-button" href="creator.html">Browse creators</a>
+      </div>
+      <div class="creator-grid" id="topCreators"></div>
+    </div>
+  </section>
+
+  <section class="section cta-section">
+    <div class="container card cta-card">
+      <div>
+        <span class="eyebrow">Built for creators</span>
+        <h2>Share your product without giving up your checkout.</h2>
+        <p>Publish freely, build a creator profile, gain followers, receive reviews, and send visitors to your own store.</p>
+      </div>
+      <a class="btn btn-primary" href="dashboard.html">Publish a product</a>
+    </div>
+  </section>
+</main>
+
 <footer class="footer"><div class="container">LaunchBoard™ · Designed & Developed by TanTan Plays · © <span id="year"></span></div></footer>
 <dialog class="modal" id="loginModal"><div class="pad"><h2>Log in</h2><form id="loginForm" class="form-grid"><input class="field full" name="email" type="email" placeholder="Email" required><input class="field full" name="password" type="password" placeholder="Password" required><button class="btn btn-primary full">Log in</button></form></div></dialog>
 <dialog class="modal" id="signupModal"><div class="pad"><h2>Create account</h2><form id="signupForm" class="form-grid"><input class="field full" name="name" placeholder="Name" required><input class="field full" name="email" type="email" placeholder="Email" required><input class="field full" name="password" type="password" minlength="6" placeholder="Password" required><button class="btn btn-primary full">Join LaunchBoard</button></form></div></dialog>
