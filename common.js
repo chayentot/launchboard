@@ -255,61 +255,94 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 
-/* V5.4 mobile shop navigation */
+/* =========================================================
+   V6 MOBILE COMMERCE NAVIGATION
+   ========================================================= */
 (function(){
+  const MOBILE_QUERY='(max-width:760px)';
+
   function page(){
     return (location.pathname.split('/').pop()||'index.html').toLowerCase();
   }
 
-  function installMobileBottomNav(){
-    if(document.querySelector('.mobile-bottom-nav'))return;
-    if(!['product.html','creator.html','messages.html'].includes(page()))return;
-
-    const nav=document.createElement('nav');
-    nav.className='mobile-bottom-nav';
-    nav.setAttribute('aria-label','Mobile navigation');
-    nav.innerHTML=`
-      <a href="index.html"><span>⌂</span><small>Home</small></a>
-      <a href="dashboard.html?publish=1"><span>＋</span><small>Sell</small></a>
-      <a href="messages.html"><span>✉</span><small>Messages</small></a>
-      <a href="dashboard.html"><span>◎</span><small>Profile</small></a>`;
-    document.body.appendChild(nav);
+  function navItems(){
+    return [
+      ['index.html','⌂','Home'],
+      ['dashboard.html?publish=1','＋','Sell'],
+      ['messages.html','✉','Messages'],
+      ['dashboard.html','◎','Profile']
+    ];
   }
 
-  function installMobileBackButton(){
+  function installBottomNavigation(){
+    let nav=document.querySelector('.mobile-bottom-nav');
+
+    if(!nav){
+      nav=document.createElement('nav');
+      nav.className='mobile-bottom-nav';
+      nav.setAttribute('aria-label','Mobile navigation');
+      document.body.appendChild(nav);
+    }
+
+    nav.innerHTML=navItems().map(([href,icon,label])=>
+      `<a href="${href}" data-mobile-destination="${label.toLowerCase()}"><span>${icon}</span><small>${label}</small></a>`
+    ).join('');
+
+    const current=page();
+    const active=current==='dashboard.html'
+      ? (new URLSearchParams(location.search).get('publish')==='1'?'sell':'profile')
+      : current==='messages.html'?'messages':'home';
+
+    nav.querySelector(`[data-mobile-destination="${active}"]`)?.classList.add('active');
+  }
+
+  function installBackButton(){
     if(page()==='index.html'||page()==='dashboard.html')return;
-    const nav=document.querySelector('.topbar .nav');
-    if(!nav||document.getElementById('mobileBackButton'))return;
+
+    const header=document.querySelector('.topbar .nav');
+    if(!header||document.getElementById('mobileBackButton'))return;
 
     const button=document.createElement('button');
     button.id='mobileBackButton';
     button.className='mobile-back-button';
     button.type='button';
-    button.setAttribute('aria-label','Back to home');
+    button.setAttribute('aria-label','Back to Home');
     button.innerHTML='<span aria-hidden="true">‹</span>';
-    button.addEventListener('click',()=>location.href='index.html');
-    nav.insertBefore(button,nav.firstChild);
+
+    button.addEventListener('click',()=>location.replace('index.html'));
+    header.insertBefore(button,header.firstChild);
   }
 
-  function installAndroidBackGuard(){
-    if(!window.matchMedia('(max-width:760px)').matches||page()==='index.html')return;
-    history.replaceState({launchboard:true},'',location.href);
-    history.pushState({launchboardGuard:true},'',location.href);
-    let handling=false;
+  function installHardwareBackHandling(){
+    if(!matchMedia(MOBILE_QUERY).matches||page()==='index.html')return;
+
+    history.replaceState({launchboardPage:page()},'',location.href);
+    history.pushState({launchboardBackGuard:true},'',location.href);
+
+    let redirecting=false;
     addEventListener('popstate',()=>{
-      if(handling)return;
-      handling=true;
+      if(redirecting)return;
+      redirecting=true;
       location.replace('index.html');
     });
   }
 
-  function start(){
-    installMobileBottomNav();
-    installMobileBackButton();
-    installAndroidBackGuard();
+  function addPageClass(){
+    document.documentElement.classList.add('launchboard-v6');
+    document.body.classList.add(`page-${page().replace('.html','')}`);
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
+  function start(){
+    addPageClass();
+    installBottomNavigation();
+    installBackButton();
+    installHardwareBackHandling();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
 })();
 

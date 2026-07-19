@@ -1,6 +1,24 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LaunchBoard — Discover products and creators</title><meta name="description" content="Discover products from independent creators and brands."><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script defer src="common.js"></script><script defer src="app.js"></script></head><body>
 <header class="topbar"><div class="container nav"><a class="brand" href="index.html">Launch<span>Board</span></a><nav class="navlinks"><a href="#discover">Discover</a><a href="#creators">Creators</a><a href="#featured">Premium</a></nav><div class="actions" id="navActions"></div><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="Open account menu" aria-controls="mobileMenu">☰</button></div></header>
 <main>
+
+  <section class="mobile-commerce-header" aria-label="LaunchBoard mobile shop">
+    <div class="container">
+      <div class="mobile-commerce-row">
+        <div>
+          <span class="mobile-commerce-kicker">LaunchBoard Shop</span>
+          <h1>Discover something useful</h1>
+        </div>
+        <a class="mobile-commerce-profile" href="dashboard.html" aria-label="Open my dashboard">◎</a>
+      </div>
+      <form class="mobile-commerce-search" id="mobileCommerceSearchForm" role="search">
+        <span aria-hidden="true">⌕</span>
+        <input id="mobileCommerceSearch" type="search" placeholder="Search products or creators" aria-label="Search products or creators">
+        <button type="submit">Search</button>
+      </form>
+    </div>
+  </section>
+
   <section class="hero hero-pro">
     <div class="container hero-grid">
       <div>
@@ -37,6 +55,13 @@
       <div class="product-grid" id="featuredProducts"></div>
     </div>
   </section>
+
+
+  <nav class="mobile-shop-section-nav container" aria-label="Shop sections">
+    <a href="#discover">Discover</a>
+    <a href="#recommended">For you</a>
+    <a href="#creators">Creators</a>
+  </nav>
 
   <section class="section muted-section" id="discover">
     <div class="container">
@@ -106,7 +131,7 @@
     </div>
   </section>
 
-  <section class="section">
+  <section class="section" id="creators">
     <div class="container">
       <div class="section-heading">
         <div><span class="eyebrow">People to discover</span><h2>Featured creators</h2></div>
