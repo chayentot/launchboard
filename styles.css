@@ -1645,3 +1645,78 @@
   }
 }
 
+
+/* =========================================================
+   V6.1.5 RESPONSIVE FILTER + SORT ALIGNMENT
+   ========================================================= */
+
+@media (max-width: 760px) {
+  #discover .compact-mobile-discovery-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 7px !important;
+    margin: 0 0 10px !important;
+    padding: 0 !important;
+  }
+
+  #discover .compact-mobile-discovery-actions .mobile-filter-button,
+  #discover .compact-mobile-discovery-actions .mobile-sort-button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 82px !important;
+    min-height: 38px !important;
+    padding: 0 12px !important;
+    margin: 0 !important;
+    border-radius: 11px !important;
+    font-size: .66rem !important;
+    white-space: nowrap !important;
+  }
+
+  #discover .compact-mobile-discovery-actions .mobile-filter-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+  }
+
+  #discover .compact-mobile-discovery-actions .mobile-sort-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #discover .mobile-filter-count {
+    display: inline-grid !important;
+    place-items: center !important;
+    min-width: 17px !important;
+    height: 17px !important;
+    padding: 0 4px !important;
+    border-radius: 999px !important;
+    font-size: .54rem !important;
+    line-height: 1 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  #discover .compact-mobile-discovery-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  #discover .compact-mobile-discovery-actions .mobile-filter-button,
+  #discover .compact-mobile-discovery-actions .mobile-sort-button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 300px) {
+  #discover .compact-mobile-discovery-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
+
