@@ -1030,9 +1030,7 @@
 
 
 /* =========================================================
-   V5.1 MOBILE BACK BUTTON
-   Appears on Sell/Dashboard, Messages, Creator Profile,
-   Product details, and other inner pages.
+   V5.2 RELIABLE MOBILE BACK BUTTON
    ========================================================= */
 
 .mobile-back-button {
@@ -1040,29 +1038,39 @@
 }
 
 @media (max-width: 760px) {
+  .topbar .nav {
+    position: relative;
+  }
+
   .mobile-back-button {
-    display: grid;
-    place-items: center;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
     flex: 0 0 42px;
     width: 42px;
     height: 42px;
+    margin-right: 2px;
     padding: 0;
     border: 1px solid var(--line);
     border-radius: 13px;
     background: #fff;
     color: var(--ink);
+    box-shadow: 0 4px 14px rgba(26,30,60,.06);
     font-size: 2rem;
     font-weight: 500;
     line-height: 1;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-back-button span {
     display: block;
-    transform: translateY(-1px);
+    margin-top: -3px;
   }
 
-  .topbar .nav:has(.mobile-back-button) .brand {
+  .topbar .nav .mobile-back-button + .brand {
+    margin-left: 0;
     font-size: 1.12rem;
   }
 }
+

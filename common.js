@@ -292,31 +292,115 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 
-/* V5.1 mobile back button for inner pages */
-function installMobileBackButton(){
-  const path=(location.pathname.split('/').pop() || 'index.html').toLowerCase();
-  const isHome=path==='' || path==='index.html';
-  if(isHome || document.getElementById('mobileBackButton'))return;
+/* =========================================================
+   V5.2 RELIABLE MOBILE NAVIGATION
+   - Adds a visible back button on every inner page.
+   - Handles the Android hardware/keypad Back button.
+   - Messages, creator, and product pages return to Dashboard.
+   - Dashboard/Sell returns to the LaunchBoard homepage.
+   ========================================================= */
 
-  const nav=document.querySelector('.topbar .nav');
-  if(!nav)return;
+(function setupLaunchBoardMobileNavigation() {
+  function currentPageName() {
+    const name = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    return name || 'index.html';
+  }
 
-  const button=document.createElement('button');
-  button.id='mobileBackButton';
-  button.className='mobile-back-button';
-  button.type='button';
-  button.setAttribute('aria-label','Go back');
-  button.innerHTML='<span aria-hidden="true">‹</span>';
+  function mobileBackDestination() {
+    const page = currentPageName();
 
-  button.addEventListener('click',()=>{
-    if(history.length>1){
-      history.back();
-    }else{
-      location.href='index.html';
+    if (page === 'dashboard.html') {
+      return 'index.html';
     }
-  });
 
-  nav.insertBefore(button,nav.firstChild);
-}
+    if (
+      page === 'messages.html' ||
+      page === 'creator.html' ||
+      page === 'product.html' ||
+      page === 'profile.html' ||
+      page === 'edit-product.html'
+    ) {
+      return 'dashboard.html';
+    }
 
-document.addEventListener('DOMContentLoaded',installMobileBackButton);
+    return 'index.html';
+  }
+
+  function navigateBack() {
+    const destination = mobileBackDestination();
+
+    // Use a fixed destination instead of history.back().
+    // This prevents the Android WebView from closing when there
+    // is no usable browser-history entry.
+    location.href = destination;
+  }
+
+  function installVisibleBackButton() {
+    const page = currentPageName();
+    if (page === 'index.html' || document.getElementById('mobileBackButton')) {
+      return;
+    }
+
+    const nav = document.querySelector('.topbar .nav');
+    if (!nav) {
+      return;
+    }
+
+    const button = document.createElement('button');
+    button.id = 'mobileBackButton';
+    button.className = 'mobile-back-button';
+    button.type = 'button';
+    button.setAttribute('aria-label', 'Go back');
+    button.innerHTML = '<span aria-hidden="true">‹</span>';
+
+    button.addEventListener('click', navigateBack);
+    nav.insertBefore(button, nav.firstChild);
+  }
+
+  function installAndroidBackHandler() {
+    const page = currentPageName();
+    if (page === 'index.html') {
+      return;
+    }
+
+    // Add a history entry so the first Android hardware Back press
+    // fires popstate instead of immediately closing the WebView.
+    history.replaceState(
+      { launchboardPage: page, launchboardGuard: false },
+      '',
+      location.href
+    );
+    history.pushState(
+      { launchboardPage: page, launchboardGuard: true },
+      '',
+      location.href
+    );
+
+    let handlingBack = false;
+
+    window.addEventListener('popstate', function () {
+      if (handlingBack) {
+        return;
+      }
+
+      handlingBack = true;
+      location.replace(mobileBackDestination());
+    });
+  }
+
+  function initialize() {
+    installVisibleBackButton();
+
+    // Only intercept hardware Back on mobile-sized screens / WebViews.
+    if (window.matchMedia('(max-width: 760px)').matches) {
+      installAndroidBackHandler();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize, { once: true });
+  } else {
+    initialize();
+  }
+})();
+
