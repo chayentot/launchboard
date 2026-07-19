@@ -16,7 +16,18 @@ function renderProduct(likes,reviews){
           ${product.image_url?`<img src="${esc(safeUrl(product.image_url,''))}" alt="${esc(product.title)}">`:'<div class="image-placeholder">No image available</div>'}
         </div>
 
-        <div class="card pad" style="margin-top:20px">
+        <div class="product-image-actions">
+          <button class="product-heart-action ${liked?'is-liked':''}" id="likeBtn" type="button" aria-label="${liked?'Unlike':'Like'} product">
+            <span aria-hidden="true">${liked?'♥':'♡'}</span>
+            <span class="product-heart-label">${liked?'Liked':'Like'}</span>
+            <strong>${likes.length}</strong>
+          </button>
+          <a class="product-visit-action" id="visitBtn" href="${safeUrl(product.product_url)}" target="_blank" rel="noopener">
+            Visit product <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+
+        <div class="card pad" style="margin-top:12px">
           <h2>About this product</h2>
           <p>${esc(product.description)}</p>
           <div class="chips">${(product.tags||[]).map(t=>`<span class="chip">#${esc(t)}</span>`).join('')}</div>
@@ -45,14 +56,7 @@ function renderProduct(likes,reviews){
       </section>
 
       <aside>
-        <div class="card pad product-actions-card">
-          <div class="row product-action-buttons">
-            <button class="btn ${liked?'btn-soft':'btn-ghost'}" id="likeBtn">♡ ${likes.length}</button>
-            <a class="btn btn-primary" id="visitBtn" href="${safeUrl(product.product_url)}" target="_blank" rel="noopener">Visit product ↗</a>
-          </div>
-        </div>
-
-        <div class="card pad" style="margin-top:20px">
+<div class="card pad" style="margin-top:20px">
           <div class="profile-head">
             <img class="avatar" src="${esc(safeUrl(owner.avatar_url,'https://placehold.co/160x160?text=Creator'))}" alt="${esc(owner.full_name||product.creator||'Creator')}">
             <div>

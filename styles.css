@@ -1845,3 +1845,147 @@
   }
 }
 
+
+/* =========================================================
+   V6.1.7 COMPACT ONE-LINE FILTERS + VISIBLE PRODUCT ACTIONS
+   Final overrides use exact selectors and load last.
+   ========================================================= */
+
+@media (max-width: 760px) {
+  /* Filters and Sort: always one row, equal width, compact. */
+  #discover div.mobile-discovery-bar.compact-mobile-discovery-actions.discover-controls-left {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: center !important;
+    justify-content: stretch !important;
+    width: 100% !important;
+    gap: 7px !important;
+    margin: 0 0 9px !important;
+    padding: 0 !important;
+  }
+
+  #discover div.mobile-discovery-bar.compact-mobile-discovery-actions.discover-controls-left > button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: static !important;
+    float: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    margin: 0 !important;
+    padding: 0 9px !important;
+    border-radius: 10px !important;
+    font-size: .64rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  #discover .mobile-filter-count {
+    min-width: 15px !important;
+    height: 15px !important;
+    padding: 0 3px !important;
+    font-size: .49rem !important;
+  }
+
+  /* Product image is slightly shorter so actions appear immediately. */
+  .page-product .detail-media {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin-bottom: 0 !important;
+    padding: 5px !important;
+    overflow: hidden !important;
+  }
+
+  .page-product .detail-media img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 68vh !important;
+    object-fit: contain !important;
+    border-radius: 11px !important;
+  }
+
+  /* Heart and Visit Product are directly under the image and never hidden. */
+  .page-product .product-image-actions {
+    position: relative !important;
+    z-index: 12 !important;
+    display: grid !important;
+    grid-template-columns: minmax(94px, .42fr) minmax(0, 1fr) !important;
+    width: 100% !important;
+    gap: 8px !important;
+    margin: 8px 0 12px !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .page-product .product-heart-action,
+  .page-product .product-visit-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 0 10px !important;
+    border-radius: 11px !important;
+    font-size: .68rem !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .page-product .product-heart-action {
+    gap: 5px !important;
+    border: 1px solid var(--line) !important;
+    background: #fff !important;
+    color: var(--ink) !important;
+  }
+
+  .page-product .product-heart-action.is-liked {
+    border-color: #efabc0 !important;
+    background: #fff0f5 !important;
+    color: #d52d68 !important;
+  }
+
+  .page-product .product-heart-label {
+    display: inline !important;
+    font-size: .65rem !important;
+  }
+
+  .page-product .product-heart-action strong {
+    font-size: .58rem !important;
+  }
+
+  .page-product .product-visit-action {
+    background: var(--brand) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+  }
+
+  .page-product .product-image-actions + .card {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 320px) {
+  #discover div.mobile-discovery-bar.compact-mobile-discovery-actions.discover-controls-left {
+    gap: 5px !important;
+  }
+
+  #discover div.mobile-discovery-bar.compact-mobile-discovery-actions.discover-controls-left > button {
+    padding: 0 6px !important;
+    font-size: .6rem !important;
+  }
+
+  .page-product .product-image-actions {
+    grid-template-columns: 88px minmax(0, 1fr) !important;
+    gap: 6px !important;
+  }
+}
+
