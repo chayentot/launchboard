@@ -1510,3 +1510,138 @@
   }
 }
 
+
+/* =========================================================
+   V6.1.4 DEFINITIVE HEADING + 3-CREATOR MOBILE FIX
+   Uses the exact current HTML selectors.
+   ========================================================= */
+
+@media (max-width: 760px) {
+  #discover .discover-heading-row,
+  #creators .creators-heading-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 8px !important;
+    margin: 0 0 8px !important;
+    text-align: left !important;
+  }
+
+  #discover .section-title-left,
+  #creators .section-title-left {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  #discover .section-title-left h2,
+  #creators .section-title-left h2,
+  #creators .section-title-left .eyebrow {
+    display: block !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    text-align: left !important;
+  }
+
+  #discover .discover-heading-row #resultSummary {
+    flex: 0 0 auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+  }
+
+  #creators .creators-heading-row .text-button {
+    flex: 0 0 auto !important;
+    margin: 0 0 1px auto !important;
+    white-space: nowrap !important;
+  }
+
+  #creators #topCreators.creator-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    width: 100% !important;
+  }
+
+  #creators #topCreators .creator-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    min-width: 0 !important;
+    min-height: 122px !important;
+    padding: 8px 5px !important;
+    border-radius: 13px !important;
+    text-align: center !important;
+  }
+
+  #creators #topCreators .creator-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+    margin: 0 auto 5px !important;
+  }
+
+  #creators #topCreators .creator-card > div:last-child {
+    width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+  }
+
+  #creators #topCreators .creator-card h3 {
+    width: 100% !important;
+    margin: 0 0 3px !important;
+    font-size: .68rem !important;
+    line-height: 1.1 !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #creators #topCreators .creator-card p {
+    width: 100% !important;
+    margin: 0 !important;
+    font-size: .5rem !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #creators #topCreators .creator-signals {
+    display: flex !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 2px 4px !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+    font-size: .47rem !important;
+    line-height: 1.1 !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 350px) {
+  #creators #topCreators.creator-grid {
+    gap: 5px !important;
+  }
+
+  #creators #topCreators .creator-card {
+    min-height: 116px !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+
+  #creators #topCreators .creator-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+  }
+}
+
