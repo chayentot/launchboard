@@ -4,6 +4,7 @@ let memberProfiles={};
 let creatorDirectory=[];
 let followedCreatorIds=new Set();
 let creatorMode='following';
+const READ_KEY_PREFIX='launchboard:conversation-read:';
 
 async function loadConversations(){
   if(!currentUser){
@@ -51,31 +52,60 @@ async function loadConversations(){
 
     const [
       {data:productRows,error:productsError},
-      {data:profileRows,error:profilesError}
+      {data:profileRows,error:profilesError},
+      {data:messageRows,error:messagesError}
     ]=await Promise.all([
       productIds.length
         ? sb.from('products').select('id,title').in('id',productIds)
         : Promise.resolve({data:[],error:null}),
       otherUserIds.length
         ? sb.from('profiles').select('id,full_name,username,avatar_url,is_verified').in('id',otherUserIds)
+        : Promise.resolve({data:[],error:null}),
+      conversationIds.length
+        ? sb.from('messages')
+            .select('id,conversation_id,sender_id,body,created_at')
+            .in('conversation_id',conversationIds)
+            .order('created_at',{ascending:false})
         : Promise.resolve({data:[],error:null})
     ]);
 
     if(productsError)throw productsError;
     if(profilesError)throw profilesError;
+    if(messagesError)throw messagesError;
 
     const productsById=Object.fromEntries((productRows||[]).map(row=>[row.id,row]));
     memberProfiles=Object.fromEntries((profileRows||[]).map(row=>[row.id,row]));
 
+    const latestByConversation={};
+    (messageRows||[]).forEach(message=>{
+      if(!latestByConversation[message.conversation_id]){
+        latestByConversation[message.conversation_id]=message;
+      }
+    });
+
     conversations=(conversationRows||[]).map(conversation=>{
       const members=(allMembers||[]).filter(row=>row.conversation_id===conversation.id);
       const otherMember=members.find(row=>row.user_id!==currentUser.id);
+      const latestMessage=latestByConversation[conversation.id]||null;
+      const lastReadAt=Number(localStorage.getItem(READ_KEY_PREFIX+conversation.id)||0);
+      const unread=Boolean(
+        latestMessage
+        && latestMessage.sender_id!==currentUser.id
+        && new Date(latestMessage.created_at).getTime()>lastReadAt
+      );
+
       return {
         ...conversation,
         members,
+        latestMessage,
+        unread,
         otherProfile:otherMember?memberProfiles[otherMember.user_id]||{}:{},
         product:productsById[conversation.product_id]||null
       };
+    }).sort((a,b)=>{
+      const aTime=new Date(a.latestMessage?.created_at||a.updated_at||0).getTime();
+      const bTime=new Date(b.latestMessage?.created_at||b.updated_at||0).getTime();
+      return bTime-aTime;
     });
 
     if(active&&!conversations.some(conversation=>conversation.id===active)){
@@ -152,6 +182,11 @@ function closeMobileChat(){
   document.body.classList.remove('messenger-chat-open');
 }
 
+window.LaunchBoardMessages={
+  isChatOpen:()=>document.body.classList.contains('messenger-chat-open'),
+  closeChat:closeMobileChat
+};
+
 function filteredConversations(){
   const query=($('#conversationSearch')?.value||'').trim().toLowerCase();
   if(!query)return conversations;
@@ -160,7 +195,8 @@ function filteredConversations(){
     return [
       profile.full_name,
       profile.username,
-      conversation.product?.title
+      conversation.product?.title,
+      conversation.latestMessage?.body
     ].some(value=>String(value||'').toLowerCase().includes(query));
   });
 }
@@ -192,10 +228,15 @@ function renderConversationList(){
       <span class="messenger-conversation-main">
         <span class="messenger-conversation-topline">
           <strong>${esc(name)} ${badge(profile)}</strong>
-          <time>${formatConversationTime(conversation.updated_at)}</time>
+          <time>${formatConversationTime(conversation.latestMessage?.created_at||conversation.updated_at)}</time>
         </span>
-        <small>${esc(conversation.product?.title||'Tap to open conversation')}</small>
+        <small class="${conversation.unread?'unread':''}">${esc(
+          conversation.latestMessage
+            ? `${conversation.latestMessage.sender_id===currentUser.id?'You: ':''}${conversation.latestMessage.body}`
+            : (conversation.product?.title||'Tap to open conversation')
+        )}</small>
       </span>
+      ${conversation.unread?'<span class="messenger-unread-dot" aria-label="Unread message"></span>':''}
     </button>`;
   }).join('');
 
@@ -227,13 +268,18 @@ async function loadMessages(){
   const profile=conversation.otherProfile||{};
   const name=profile.full_name||profile.username||'Conversation';
 
+  localStorage.setItem(READ_KEY_PREFIX+conversation.id,String(Date.now()));
+  conversation.unread=false;
+
   $('#chatTitle').innerHTML=`<div class="messenger-chat-person">
     <span class="messenger-header-avatar">${profile.avatar_url
       ? `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="">`
       : esc(name.slice(0,1).toUpperCase())}</span>
     <div>
       <h2>${esc(name)}</h2>
-      <p>${esc(conversation.product?.title||'Direct message')}</p>
+      ${conversation.product
+        ? `<a class="messenger-product-context" href="product.html?id=${encodeURIComponent(conversation.product.id)}">${esc(conversation.product.title)}</a>`
+        : '<p>Direct message</p>'}
     </div>
   </div>`;
 
@@ -256,6 +302,7 @@ async function loadMessages(){
     ||'<div class="messenger-empty"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>';
 
   container.scrollTop=container.scrollHeight;
+  renderConversationList();
 }
 
 async function send(event){

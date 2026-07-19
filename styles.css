@@ -3515,3 +3515,93 @@ dialog.modal > .pad {
   }
 }
 
+
+
+/* =========================================================
+   V7.3 STABILITY AND POLISH
+   ========================================================= */
+
+.messenger-conversation {
+  position: relative;
+}
+
+.messenger-conversation-main small.unread {
+  color: var(--ink);
+  font-weight: 850;
+}
+
+.messenger-unread-dot {
+  position: absolute;
+  right: 7px;
+  bottom: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.messenger-product-context {
+  display: block;
+  max-width: min(62vw,420px);
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--brand);
+  font-size: .62rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-related-section {
+  padding-top: 16px !important;
+}
+
+.related-product-card {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.related-product-image {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f1f2f6;
+}
+
+.related-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.related-product-copy {
+  display: block;
+  padding: 8px;
+}
+
+.related-product-copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: .72rem;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.related-product-copy small {
+  display: block;
+  margin-top: 4px;
+  color: var(--brand);
+  font-size: .68rem;
+  font-weight: 850;
+}
+
+@media (max-width:760px) {
+  .product-related-section .product-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    gap: 8px !important;
+  }
+}

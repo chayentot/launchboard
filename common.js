@@ -356,10 +356,11 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 
 /* =========================================================
-   V7.1 ANDROID BACK NAVIGATION
-   - Inner pages return to Home.
-   - Home requires a second Back press to exit.
-   - Does not interfere with normal links.
+   V7.3 ANDROID BACK PRIORITY
+   1. Close open dialog/sheet
+   2. Close an open Messenger chat
+   3. Return inner pages to Home
+   4. Double Back exits from Home
    ========================================================= */
 (function(){
   function page(){
@@ -368,13 +369,29 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   let lastHomeBackPress=0;
 
-  function showHomeExitHint(){
-    if(typeof toast==='function'){
-      toast('Press Back again to exit.');
+  function closeOpenLayer(){
+    const dialog=document.querySelector('dialog[open]');
+    if(dialog){
+      dialog.close();
+      return true;
     }
+
+    if(window.LaunchBoardMessages?.isChatOpen?.()){
+      window.LaunchBoardMessages.closeChat();
+      history.replaceState(null,'','messages.html');
+      return true;
+    }
+
+    return false;
   }
 
-  function handleNativeBack(){
+  function showExitHint(){
+    if(typeof toast==='function')toast('Press Back again to exit.');
+  }
+
+  function handleBack(){
+    if(closeOpenLayer())return;
+
     const current=page();
     const capacitorApp=window.Capacitor?.Plugins?.App;
 
@@ -390,57 +407,46 @@ window.addEventListener('DOMContentLoaded',()=>{
     }
 
     lastHomeBackPress=now;
-    showHomeExitHint();
+    showExitHint();
   }
 
-  function installCapacitorHandler(){
-    const capacitorApp=window.Capacitor?.Plugins?.App;
-    if(!capacitorApp?.addListener)return false;
-
-    capacitorApp.addListener('backButton',handleNativeBack);
+  function installCapacitor(){
+    const app=window.Capacitor?.Plugins?.App;
+    if(!app?.addListener)return false;
+    app.addListener('backButton',handleBack);
     return true;
   }
 
-  function installBrowserHistoryGuard(){
+  function installBrowserFallback(){
     if(!matchMedia('(max-width:760px)').matches)return;
 
-    const current=page();
-
-    if(current==='index.html'){
-      history.replaceState({launchboardRoot:true},'',location.href);
-      history.pushState({launchboardGuard:true},'',location.href);
-
-      addEventListener('popstate',()=>{
-        history.pushState({launchboardGuard:true},'',location.href);
-        const now=Date.now();
-
-        if(now-lastHomeBackPress<1800){
-          window.close();
-          return;
-        }
-
-        lastHomeBackPress=now;
-        showHomeExitHint();
-      });
-
-      return;
-    }
-
-    history.replaceState({launchboardPage:current},'',location.href);
+    history.replaceState({launchboard:true},'',location.href);
     history.pushState({launchboardGuard:true},'',location.href);
 
-    let redirecting=false;
     addEventListener('popstate',()=>{
-      if(redirecting)return;
-      redirecting=true;
-      location.replace('index.html');
+      if(closeOpenLayer()){
+        history.pushState({launchboardGuard:true},'',location.href);
+        return;
+      }
+
+      if(page()!=='index.html'){
+        location.replace('index.html');
+        return;
+      }
+
+      history.pushState({launchboardGuard:true},'',location.href);
+      const now=Date.now();
+      if(now-lastHomeBackPress<1800){
+        window.close();
+      }else{
+        lastHomeBackPress=now;
+        showExitHint();
+      }
     });
   }
 
   function start(){
-    if(!installCapacitorHandler()){
-      installBrowserHistoryGuard();
-    }
+    if(!installCapacitor())installBrowserFallback();
   }
 
   if(document.readyState==='loading'){

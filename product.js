@@ -87,3 +87,41 @@ window.addEventListener('DOMContentLoaded',()=>{
     button.onclick=()=>openReportDialog('product',id);
   }
 });
+
+
+async function renderRelatedProducts(){
+  const target=$('#relatedProducts');
+  if(!target||!product)return;
+
+  const {data,error}=await sb.from('products')
+    .select('*')
+    .eq('category',product.category)
+    .neq('id',product.id)
+    .order('created_at',{ascending:false})
+    .limit(4);
+
+  if(error){
+    console.warn('Related products failed:',error);
+    target.closest('.product-related-section')?.remove();
+    return;
+  }
+
+  const rows=data||[];
+  if(!rows.length){
+    target.closest('.product-related-section')?.remove();
+    return;
+  }
+
+  target.innerHTML=rows.map(item=>`
+    <a class="related-product-card" href="product.html?id=${item.id}">
+      <span class="related-product-image">
+        ${item.image_url
+          ? `<img src="${esc(safeUrl(item.image_url,''))}" alt="${esc(item.title)}">`
+          : '<span>No image</span>'}
+      </span>
+      <span class="related-product-copy">
+        <strong>${esc(item.title)}</strong>
+        <small>${esc(formatPeso(item.price))}</small>
+      </span>
+    </a>`).join('');
+}
