@@ -66,7 +66,7 @@
   <section class="section muted-section" id="discover">
     <div class="container">
       <div class="section-heading">
-        <div><span class="eyebrow">Explore LaunchBoard</span><h2>Discover products</h2></div>
+        <div><h2>Discover products</h2></div>
         <p id="resultSummary" class="muted"></p>
       </div>
 
@@ -94,28 +94,12 @@
         <button class="btn btn-ghost" id="clearFilters" type="button">Clear</button>
       </div>
 
-      <div class="mobile-discovery-bar" aria-label="Mobile product search and filters">
-        <label class="mobile-search-field">
-          <span aria-hidden="true">⌕</span>
-          <input id="mobileSearchInput" type="search" placeholder="Search products">
-        </label>
-        <button class="mobile-filter-button" id="openMobileFilters" type="button" aria-controls="mobileFilterSheet">
-          Filters <span id="activeFilterCount" class="filter-count" hidden>0</span>
+      <div class="mobile-discovery-bar compact-mobile-discovery-actions">
+        <button class="mobile-filter-button" id="openMobileFilters" type="button">
+          <span>Filters</span>
+          <span class="mobile-filter-count" id="mobileFilterCount">0</span>
         </button>
-        <button class="mobile-sort-button" id="mobileSortButton" type="button" aria-controls="mobileFilterSheet">Sort</button>
-      </div>
-
-      <div class="category-chips" id="categoryChips"></div>
-      <div class="product-grid" id="productGrid"></div>
-
-      <div class="empty-state card" id="emptyProducts" hidden>
-        <h3>No matching products</h3>
-        <p>Try a broader search or clear the active filters.</p>
-        <button class="btn btn-primary" id="emptyClear" type="button">Clear filters</button>
-      </div>
-
-      <div class="center">
-        <button class="btn btn-ghost" id="loadMore" type="button" hidden>Load more</button>
+        <button class="mobile-sort-button" id="openMobileSort" type="button">Sort</button>
       </div>
     </div>
   </section>

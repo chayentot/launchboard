@@ -1151,3 +1151,177 @@
   }
 }
 
+
+/* =========================================================
+   LAUNCHBOARD V6.1 — MOBILE POLISH
+   - One search bar only
+   - Cleaner dashboard header
+   - Add Product moved into Your Products
+   - Tighter product cards and spacing
+   ========================================================= */
+
+.products-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.products-section-head h2 {
+  margin: 0 !important;
+}
+
+.compact-add-product {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  /* Header polish */
+  .topbar .nav {
+    height: 50px !important;
+  }
+
+  .mobile-menu-button {
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    font-size: .9rem !important;
+  }
+
+  .mobile-commerce-header {
+    padding-top: 10px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .mobile-commerce-row {
+    margin-bottom: 7px !important;
+  }
+
+  .mobile-commerce-row h1 {
+    font-size: 1.16rem !important;
+  }
+
+  .mobile-commerce-profile {
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+  }
+
+  .mobile-commerce-search {
+    min-height: 40px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Keep only Filters and Sort in the discover toolbar. */
+  .compact-mobile-discovery-actions {
+    display: flex !important;
+    justify-content: flex-end;
+    gap: 7px !important;
+    margin-bottom: 9px !important;
+  }
+
+  .compact-mobile-discovery-actions .mobile-filter-button,
+  .compact-mobile-discovery-actions .mobile-sort-button {
+    flex: 0 0 auto !important;
+    min-width: 74px;
+  }
+
+  #discover .section-heading {
+    margin-bottom: 6px !important;
+  }
+
+  #discover .section-heading h2 {
+    font-size: 1rem !important;
+  }
+
+  /* Dashboard header: title + avatar only. */
+  .page-dashboard .dashboard-mobile-head {
+    align-items: center !important;
+  }
+
+  .page-dashboard .dashboard-head-actions > .btn {
+    display: none !important;
+  }
+
+  .page-dashboard .dashboard-identity {
+    width: 38px;
+    height: 38px;
+    padding: 3px !important;
+    justify-content: center;
+    border-radius: 12px !important;
+  }
+
+  .page-dashboard .dashboard-identity-avatar {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .page-dashboard .dashboard-identity-name {
+    display: none !important;
+  }
+
+  .page-dashboard .dashboard-profile-menu {
+    top: 43px !important;
+    right: 0 !important;
+  }
+
+  /* Add Product now belongs to Your Products. */
+  .products-section-head {
+    margin-bottom: 8px;
+  }
+
+  .compact-add-product {
+    min-height: 36px !important;
+    padding: 7px 10px !important;
+    border-radius: 10px !important;
+    font-size: .68rem !important;
+  }
+
+  /* Tighter product management rows. */
+  .management {
+    padding: 9px 0 !important;
+  }
+
+  .management strong {
+    font-size: .82rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .management .muted {
+    margin-top: 3px !important;
+    font-size: .64rem !important;
+  }
+
+  .management .row {
+    margin-top: 7px !important;
+  }
+
+  /* Product cards: slightly denser without reducing readability. */
+  .product-card-heading {
+    padding-top: 7px !important;
+    padding-bottom: 5px !important;
+  }
+
+  .product-card-heading h3 {
+    margin-top: 2px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .product-body {
+    padding-top: 6px !important;
+  }
+
+  .product-signals {
+    margin-top: 3px !important;
+  }
+
+  /* Slightly tighter section rhythm. */
+  #recommended,
+  #creators {
+    padding-top: 13px !important;
+    padding-bottom: 13px !important;
+  }
+}
+
