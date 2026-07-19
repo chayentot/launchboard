@@ -1377,3 +1377,136 @@
   }
 }
 
+
+/* =========================================================
+   V6.1.3 LEFT-ALIGNED SECTION HEADINGS + 3-CREATOR ROW
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .left-section-heading {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .left-section-heading .section-title-left {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left !important;
+  }
+
+  .left-section-heading h2,
+  .left-section-heading .eyebrow {
+    text-align: left !important;
+  }
+
+  .discover-heading-row #resultSummary {
+    flex: 0 0 auto;
+    margin-left: auto !important;
+    text-align: right !important;
+  }
+
+  .creators-heading-row .text-button {
+    flex: 0 0 auto;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  #creators .creator-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  #creators .creator-card {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center !important;
+    justify-content: flex-start;
+    min-width: 0;
+    min-height: 126px;
+    padding: 9px 6px !important;
+    text-align: center !important;
+    border-radius: 13px !important;
+  }
+
+  #creators .creator-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    margin: 0 auto 6px !important;
+    flex: 0 0 42px;
+  }
+
+  #creators .creator-card > div:not(.creator-avatar) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #creators .creator-card h3 {
+    width: 100%;
+    margin: 0 0 3px !important;
+    font-size: .7rem !important;
+    line-height: 1.15 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center !important;
+  }
+
+  #creators .creator-card p {
+    width: 100%;
+    margin: 0 !important;
+    font-size: .53rem !important;
+    line-height: 1.2 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center !important;
+  }
+
+  #creators .creator-signals {
+    width: 100%;
+    margin-top: 4px !important;
+    font-size: .5rem !important;
+    line-height: 1.15 !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: normal;
+  }
+
+  #creators .creator-card .btn,
+  #creators .creator-card .text-button {
+    display: none !important;
+  }
+}
+
+@media (max-width: 350px) {
+  #creators .creator-grid {
+    gap: 5px !important;
+  }
+
+  #creators .creator-card {
+    min-height: 120px;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  #creators .creator-avatar {
+    width: 38px !important;
+    height: 38px !important;
+    flex-basis: 38px;
+  }
+
+  #creators .creator-card h3 {
+    font-size: .65rem !important;
+  }
+
+  #creators .creator-card p,
+  #creators .creator-signals {
+    font-size: .47rem !important;
+  }
+}
+
