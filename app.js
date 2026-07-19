@@ -97,7 +97,7 @@ function renderCategoryControls(){
   categories.forEach(category=>select.insertAdjacentHTML('beforeend',`<option value="${esc(category)}">${esc(category)}</option>`));
 
   const popular=[...new Set(allProducts.map(p=>p.category).filter(Boolean))].slice(0,10);
-  $('#categoryChips').innerHTML=[
+  if($('#categoryChips')) $('#categoryChips').innerHTML=[
     '<button class="chip active" type="button" data-category="">All</button>',
     ...popular.map(category=>`<button class="chip" type="button" data-category="${esc(category)}">${esc(category)}</button>`)
   ].join('');
@@ -138,10 +138,11 @@ function renderProducts(){
   const products=filteredProducts();
   const visible=products.slice(0,visibleCount);
 
+  if(!$('#productGrid')) return;
   $('#productGrid').innerHTML=visible.map(productCard).join('');
-  $('#emptyProducts').hidden=products.length>0;
-  $('#loadMore').hidden=visible.length>=products.length;
-  $('#resultSummary').textContent=`${products.length} product${products.length===1?'':'s'} found`;
+  if($('#emptyProducts')) $('#emptyProducts').hidden=products.length>0;
+  if($('#loadMore')) $('#loadMore').hidden=visible.length>=products.length;
+  if($('#resultSummary')) $('#resultSummary').textContent=`${products.length} product${products.length===1?'':'s'} found`;
 
   const selected=$('#categoryFilter').value;
   $$('#categoryChips .chip').forEach(chip=>chip.classList.toggle('active',chip.dataset.category===selected));
@@ -222,16 +223,16 @@ function clearFilters(){
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
-  $('#searchInput').addEventListener('input',()=>{visibleCount=PAGE_SIZE;renderProducts()});
-  $('#categoryFilter').addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
-  $('#typeFilter').addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
-  $('#sortFilter').addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
-  $('#clearFilters').onclick=clearFilters;
-  $('#emptyClear').onclick=clearFilters;
-  $('#loadMore').onclick=()=>{visibleCount+=PAGE_SIZE;renderProducts()};
+  $('#searchInput')?.addEventListener('input',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  $('#categoryFilter')?.addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  $('#typeFilter')?.addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  $('#sortFilter')?.addEventListener('change',()=>{visibleCount=PAGE_SIZE;renderProducts()});
+  if($('#clearFilters')) $('#clearFilters').onclick=clearFilters;
+  if($('#emptyClear')) $('#emptyClear').onclick=clearFilters;
+  if($('#loadMore')) $('#loadMore').onclick=()=>{visibleCount+=PAGE_SIZE;renderProducts()};
   $('#refreshRecommendations')?.addEventListener('click',renderRecommendations);
 
-  $('#categoryChips').addEventListener('click',event=>{
+  $('#categoryChips')?.addEventListener('click',event=>{
     const chip=event.target.closest('[data-category]');
     if(!chip)return;
     $('#categoryFilter').value=chip.dataset.category;
@@ -239,7 +240,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     renderProducts();
   });
 
-  $('#heroSearchForm').addEventListener('submit',event=>{
+  $('#heroSearchForm')?.addEventListener('submit',event=>{
     event.preventDefault();
     $('#searchInput').value=$('#heroSearch').value;
     visibleCount=PAGE_SIZE;
