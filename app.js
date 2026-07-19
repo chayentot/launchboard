@@ -228,6 +228,8 @@ function clearFilters(){
 
 
 
+let mobileSearchTimer;
+
 function initializeV63HomeControls(){
   const searchForm=$('#mobileCommerceSearchForm');
   const searchBox=$('#mobileCommerceSearch');
@@ -247,6 +249,15 @@ function initializeV63HomeControls(){
   });
 
   searchBox?.addEventListener('search',runSearch);
+  searchBox?.addEventListener('input',()=>{
+    clearTimeout(mobileSearchTimer);
+    mobileSearchTimer=setTimeout(()=>{
+      if(desktopSearch)desktopSearch.value=searchBox.value.trim();
+      visibleCount=PAGE_SIZE;
+      renderProducts();
+      renderRecommendations();
+    },220);
+  });
 
   const sheet=$('#mobileFilterSheet');
   const category=$('#mobileCategoryFilter');
@@ -286,8 +297,8 @@ function initializeV63HomeControls(){
     if(badge)badge.textContent=String(activeFilterCount());
   }
 
-  $('#openMobileFilters')?.addEventListener('click',()=>openSheet(false));
-  $('#openMobileSort')?.addEventListener('click',()=>openSheet(true));
+  $('#inlineSearchFilter')?.addEventListener('click',()=>openSheet(false));
+  
 
   $('#mobileResetFilters')?.addEventListener('click',()=>{
     if(category)category.value='';

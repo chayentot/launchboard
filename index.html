@@ -14,7 +14,10 @@
       <form class="mobile-commerce-search" id="mobileCommerceSearchForm" role="search">
         <span aria-hidden="true">⌕</span>
         <input id="mobileCommerceSearch" type="search" placeholder="Search products or creators" aria-label="Search products or creators">
-        <button type="submit">Search</button>
+        <button class="inline-search-filter" id="inlineSearchFilter" type="button" aria-label="Open filters and sorting">
+          <span aria-hidden="true">⚙</span>
+          <span>Filter</span>
+        </button>
       </form>
     </div>
   </section>
@@ -93,16 +96,7 @@
         </select>
         <button class="btn btn-ghost" id="clearFilters" type="button">Clear</button>
       </div>
-
-      <div class="mobile-discovery-bar compact-mobile-discovery-actions discover-controls-left">
-        <button class="mobile-filter-button" id="openMobileFilters" type="button">
-          <span>Filters</span>
-          <span class="mobile-filter-count" id="mobileFilterCount">0</span>
-        </button>
-        <button class="mobile-sort-button" id="openMobileSort" type="button">Sort</button>
-      </div>
-
-      <div class="category-chips" id="categoryChips"></div>
+<div class="category-chips" id="categoryChips"></div>
       <div class="product-grid" id="productGrid"></div>
 
       <div class="empty-state card" id="emptyProducts" hidden>

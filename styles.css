@@ -2436,3 +2436,83 @@ dialog.modal > .pad {
   }
 }
 
+
+/* =========================================================
+   V6.3.3 INLINE SEARCH FILTER
+   - Removes separate Filters / Sort row
+   - Keeps one Filter button inside the search bar
+   - Filter sheet still includes category, type, and sorting
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .mobile-commerce-search {
+    grid-template-columns: 24px minmax(0,1fr) auto !important;
+    gap: 5px !important;
+    min-height: 42px !important;
+    padding: 4px 5px 4px 10px !important;
+  }
+
+  .mobile-commerce-search input {
+    min-width: 0 !important;
+    font-size: .76rem !important;
+  }
+
+  .mobile-commerce-search .inline-search-filter {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    min-width: 76px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: var(--brand) !important;
+    color: #fff !important;
+    font-size: .65rem !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    cursor: pointer;
+  }
+
+  .mobile-commerce-search .inline-search-filter span:first-child {
+    font-size: .78rem !important;
+  }
+
+  #discover .mobile-discovery-bar,
+  #discover .compact-mobile-discovery-actions,
+  #discover .discover-controls-left {
+    display: none !important;
+  }
+
+  #discover .discover-heading-row {
+    margin-bottom: 9px !important;
+  }
+
+  /* Keep all filtering and sorting choices inside the one sheet. */
+  #mobileFilterSheet .filter-sheet-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  #mobileFilterSheet label {
+    display: grid !important;
+    gap: 6px !important;
+  }
+
+  #mobileFilterSheet select {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 340px) {
+  .mobile-commerce-search .inline-search-filter {
+    min-width: 68px !important;
+    padding: 0 8px !important;
+    font-size: .6rem !important;
+  }
+}
+
