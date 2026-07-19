@@ -115,6 +115,43 @@ function formatConversationTime(value){
     : date.toLocaleDateString([], {month:'short',day:'numeric'});
 }
 
+
+
+function renderFollowingStrip(){
+  const target=$('#followingCreatorStrip');
+  if(!target)return;
+
+  const followed=creatorDirectory
+    .filter(profile=>followedCreatorIds.has(profile.id))
+    .slice(0,8);
+
+  target.innerHTML=followed.map(profile=>{
+    const name=profile.full_name||profile.username||'Creator';
+    const avatar=profile.avatar_url
+      ? `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="">`
+      : `<span>${esc(name.slice(0,1).toUpperCase())}</span>`;
+
+    return `<button class="messenger-following-person" data-following-message="${profile.id}" type="button">
+      <span class="messenger-story-ring">
+        <span class="messenger-avatar">${avatar}</span>
+      </span>
+      <small>${esc(name)}</small>
+    </button>`;
+  }).join('')||'<p class="messenger-following-empty">Follow creators to see them here.</p>';
+
+  $$('[data-following-message]').forEach(button=>{
+    button.onclick=()=>startCreatorConversation(button.dataset.followingMessage);
+  });
+}
+
+function openMobileChat(){
+  document.body.classList.add('messenger-chat-open');
+}
+
+function closeMobileChat(){
+  document.body.classList.remove('messenger-chat-open');
+}
+
 function filteredConversations(){
   const query=($('#conversationSearch')?.value||'').trim().toLowerCase();
   if(!query)return conversations;
@@ -149,13 +186,15 @@ function renderConversationList(){
       : `<span>${esc(name.slice(0,1).toUpperCase())}</span>`;
 
     return `<button class="messenger-conversation ${conversation.id===active?'active':''}" data-id="${conversation.id}" type="button">
-      <span class="messenger-avatar">${avatar}</span>
+      <span class="messenger-story-ring compact">
+        <span class="messenger-avatar">${avatar}</span>
+      </span>
       <span class="messenger-conversation-main">
         <span class="messenger-conversation-topline">
           <strong>${esc(name)} ${badge(profile)}</strong>
           <time>${formatConversationTime(conversation.updated_at)}</time>
         </span>
-        <small>${esc(conversation.product?.title||'Direct conversation')}</small>
+        <small>${esc(conversation.product?.title||'Tap to open conversation')}</small>
       </span>
     </button>`;
   }).join('');
@@ -166,6 +205,7 @@ function renderConversationList(){
       history.replaceState(null,'',`messages.html?conversation=${encodeURIComponent(active)}`);
       renderConversationList();
       await loadMessages();
+      openMobileChat();
     };
   });
 }
@@ -266,6 +306,7 @@ async function loadCreatorDirectory(){
   creatorDirectory=profiles||[];
   followedCreatorIds=new Set((follows||[]).map(row=>row.creator_id));
   renderCreatorDirectory();
+  renderFollowingStrip();
 }
 
 function visibleCreators(){
@@ -347,11 +388,19 @@ window.addEventListener('DOMContentLoaded',()=>{
   $('#messageForm').onsubmit=send;
   $('#conversationSearch')?.addEventListener('input',renderConversationList);
   $('#openCreatorSearch')?.addEventListener('click',openCreatorSearch);
+  $('#openCreatorSearchSecondary')?.addEventListener('click',openCreatorSearch);
+  $('#closeChatView')?.addEventListener('click',closeMobileChat);
   $('#closeCreatorSearch')?.addEventListener('click',()=>$('#creatorMessageModal')?.close?.());
   $('#creatorSearchInput')?.addEventListener('input',renderCreatorDirectory);
   $('#followingCreatorsTab')?.addEventListener('click',()=>setCreatorMode('following'));
   $('#allCreatorsTab')?.addEventListener('click',()=>setCreatorMode('all'));
 
-  document.addEventListener('launchboard:auth-ready',loadConversations,{once:true});
-  if(authReady)loadConversations();
+  document.addEventListener('launchboard:auth-ready',()=>{
+    loadConversations();
+    loadCreatorDirectory().catch(()=>{});
+  },{once:true});
+  if(authReady){
+    loadConversations();
+    loadCreatorDirectory().catch(()=>{});
+  }
 });

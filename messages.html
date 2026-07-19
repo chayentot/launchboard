@@ -1,26 +1,34 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Messages · LaunchBoard</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script defer src="common.js"></script><script defer src="messages.js"></script></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">Launch<span>Board</span></a><nav class="navlinks"><a href="dashboard.html">Dashboard</a></nav><div class="actions" id="navActions"></div></div></header><main class="page messenger-page">
-  <div class="container">
-    <section class="messenger-shell">
-      <aside class="messenger-sidebar">
-        <div class="messenger-sidebar-header">
-          <div>
-            <span class="eyebrow">LaunchBoard chat</span>
-            <h1>Messages</h1>
-          </div>
-          <button class="messenger-compose-button" id="openCreatorSearch" type="button" aria-label="Start new message">＋</button>
+  <div class="container messenger-container">
+    <section class="messenger-mobile-shell">
+      <header class="messenger-mobile-top">
+        <div>
+          <span class="messenger-brand">messages</span>
         </div>
+        <button class="messenger-compose-icon" id="openCreatorSearch" type="button" aria-label="Start new message">✎</button>
+      </header>
 
-        <label class="messenger-search">
-          <span aria-hidden="true">⌕</span>
-          <input id="conversationSearch" type="search" placeholder="Search messages">
-        </label>
+      <label class="messenger-mobile-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="conversationSearch" type="search" placeholder="Search messages">
+      </label>
 
+      <section class="messenger-following-strip">
+        <div class="messenger-following-head">
+          <strong>Following</strong>
+          <button id="openCreatorSearchSecondary" type="button">See all</button>
+        </div>
+        <div class="messenger-following-list" id="followingCreatorStrip"></div>
+      </section>
+
+      <section class="messenger-inbox-section">
         <div class="messenger-list-label">Recent</div>
         <div id="conversationList" class="messenger-conversation-list"></div>
-      </aside>
+      </section>
 
-      <section class="messenger-chat-pane">
+      <section class="messenger-chat-pane" id="messengerChatPane">
         <header class="messenger-chat-header" id="chatTitle">
+          <button class="messenger-chat-back" id="closeChatView" type="button" aria-label="Back to messages">‹</button>
           <div>
             <h2>Select a conversation</h2>
             <p>Choose someone from your messages.</p>
