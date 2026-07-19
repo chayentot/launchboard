@@ -95,11 +95,22 @@
     </div>
   </section>
 
+
+  <section class="section mobile-recommendation-section" id="recommended">
+    <div class="container">
+      <div class="section-heading compact-section-heading">
+        <div><span class="eyebrow">Picked for you</span><h2>Recommended products</h2></div>
+        <button class="text-button" id="refreshRecommendations" type="button">Refresh</button>
+      </div>
+      <div class="product-grid" id="recommendedProducts"></div>
+    </div>
+  </section>
+
   <section class="section">
     <div class="container">
       <div class="section-heading">
-        <div><span class="eyebrow">People to discover</span><h2>Top creators</h2></div>
-        <a class="text-button" href="creator.html">Browse creators</a>
+        <div><span class="eyebrow">People to discover</span><h2>Featured creators</h2></div>
+        <a class="text-button" href="creator.html">See creators</a>
       </div>
       <div class="creator-grid" id="topCreators"></div>
     </div>
@@ -172,10 +183,9 @@
 
 <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
   <a href="index.html" class="active"><span>⌂</span><small>Home</small></a>
-  <a href="#discover"><span>⌕</span><small>Discover</small></a>
-  <a href="dashboard.html"><span>＋</span><small>Sell</small></a>
+  <a href="dashboard.html?publish=1"><span>＋</span><small>Sell</small></a>
   <a href="messages.html"><span>✉</span><small>Messages</small></a>
-  <button id="bottomProfileButton" type="button"><span>◎</span><small>Profile</small></button>
+  <a href="dashboard.html"><span>◎</span><small>Profile</small></a>
 </nav>
 
 <div class="toast" id="toast"></div>

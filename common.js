@@ -141,38 +141,6 @@ function renderNav(){
   $$('[data-open]').forEach(button=>{
     button.onclick=()=>$('#'+button.dataset.open)?.showModal();
   });
-
-  renderMobileMenu();
-}
-
-function renderMobileMenu(){
-  const links=$('#mobileMenuLinks');
-  if(!links)return;
-
-  if(currentUser){
-    links.innerHTML=`
-      <a href="dashboard.html"><span>Dashboard</span><small>Manage products and profile</small></a>
-      <a href="messages.html"><span>Messages</span><small>Open your conversations</small></a>
-      <a href="creator.html?id=${encodeURIComponent(currentUser.id)}"><span>Creator profile</span><small>View your public page</small></a>
-      <button id="mobileLogout" type="button"><span>Log out</span><small>Sign out of LaunchBoard</small></button>`;
-  }else{
-    links.innerHTML=`
-      <button data-open-mobile="loginModal" type="button"><span>Log in</span><small>Access your account</small></button>
-      <button data-open-mobile="signupModal" type="button"><span>Join free</span><small>Create a LaunchBoard account</small></button>`;
-  }
-
-  $('#mobileLogout')?.addEventListener('click',async()=>{
-    const {error}=await sb.auth.signOut();
-    if(error)return toast(error.message);
-    location.href='index.html';
-  });
-
-  $$('[data-open-mobile]',links).forEach(button=>{
-    button.addEventListener('click',()=>{
-      $('#mobileMenu')?.close();
-      $('#'+button.dataset.openMobile)?.showModal();
-    });
-  });
 }
 
 async function loginSubmit(event){
@@ -284,123 +252,64 @@ window.addEventListener('DOMContentLoaded',()=>{
       if(event.target===dialog)dialog.close();
     });
   });
-
-  const openMobileMenu=()=>$('#mobileMenu')?.showModal();
-  $('#mobileMenuButton')?.addEventListener('click',openMobileMenu);
-  $('#bottomProfileButton')?.addEventListener('click',openMobileMenu);
-  $('[data-close-mobile-menu]')?.addEventListener('click',()=>$('#mobileMenu')?.close());
 });
 
 
-/* =========================================================
-   V5.2 RELIABLE MOBILE NAVIGATION
-   - Adds a visible back button on every inner page.
-   - Handles the Android hardware/keypad Back button.
-   - Messages, creator, and product pages return to Dashboard.
-   - Dashboard/Sell returns to the LaunchBoard homepage.
-   ========================================================= */
-
-(function setupLaunchBoardMobileNavigation() {
-  function currentPageName() {
-    const name = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    return name || 'index.html';
+/* V5.4 mobile shop navigation */
+(function(){
+  function page(){
+    return (location.pathname.split('/').pop()||'index.html').toLowerCase();
   }
 
-  function mobileBackDestination() {
-    const page = currentPageName();
+  function installMobileBottomNav(){
+    if(document.querySelector('.mobile-bottom-nav'))return;
+    if(!['product.html','creator.html','messages.html'].includes(page()))return;
 
-    if (page === 'dashboard.html') {
-      return 'index.html';
-    }
-
-    if (
-      page === 'messages.html' ||
-      page === 'creator.html' ||
-      page === 'product.html' ||
-      page === 'profile.html' ||
-      page === 'edit-product.html'
-    ) {
-      return 'dashboard.html';
-    }
-
-    return 'index.html';
+    const nav=document.createElement('nav');
+    nav.className='mobile-bottom-nav';
+    nav.setAttribute('aria-label','Mobile navigation');
+    nav.innerHTML=`
+      <a href="index.html"><span>⌂</span><small>Home</small></a>
+      <a href="dashboard.html?publish=1"><span>＋</span><small>Sell</small></a>
+      <a href="messages.html"><span>✉</span><small>Messages</small></a>
+      <a href="dashboard.html"><span>◎</span><small>Profile</small></a>`;
+    document.body.appendChild(nav);
   }
 
-  function navigateBack() {
-    const destination = mobileBackDestination();
+  function installMobileBackButton(){
+    if(page()==='index.html'||page()==='dashboard.html')return;
+    const nav=document.querySelector('.topbar .nav');
+    if(!nav||document.getElementById('mobileBackButton'))return;
 
-    // Use a fixed destination instead of history.back().
-    // This prevents the Android WebView from closing when there
-    // is no usable browser-history entry.
-    location.href = destination;
+    const button=document.createElement('button');
+    button.id='mobileBackButton';
+    button.className='mobile-back-button';
+    button.type='button';
+    button.setAttribute('aria-label','Back to home');
+    button.innerHTML='<span aria-hidden="true">‹</span>';
+    button.addEventListener('click',()=>location.href='index.html');
+    nav.insertBefore(button,nav.firstChild);
   }
 
-  function installVisibleBackButton() {
-    const page = currentPageName();
-    if (page === 'index.html' || document.getElementById('mobileBackButton')) {
-      return;
-    }
-
-    const nav = document.querySelector('.topbar .nav');
-    if (!nav) {
-      return;
-    }
-
-    const button = document.createElement('button');
-    button.id = 'mobileBackButton';
-    button.className = 'mobile-back-button';
-    button.type = 'button';
-    button.setAttribute('aria-label', 'Go back');
-    button.innerHTML = '<span aria-hidden="true">‹</span>';
-
-    button.addEventListener('click', navigateBack);
-    nav.insertBefore(button, nav.firstChild);
-  }
-
-  function installAndroidBackHandler() {
-    const page = currentPageName();
-    if (page === 'index.html') {
-      return;
-    }
-
-    // Add a history entry so the first Android hardware Back press
-    // fires popstate instead of immediately closing the WebView.
-    history.replaceState(
-      { launchboardPage: page, launchboardGuard: false },
-      '',
-      location.href
-    );
-    history.pushState(
-      { launchboardPage: page, launchboardGuard: true },
-      '',
-      location.href
-    );
-
-    let handlingBack = false;
-
-    window.addEventListener('popstate', function () {
-      if (handlingBack) {
-        return;
-      }
-
-      handlingBack = true;
-      location.replace(mobileBackDestination());
+  function installAndroidBackGuard(){
+    if(!window.matchMedia('(max-width:760px)').matches||page()==='index.html')return;
+    history.replaceState({launchboard:true},'',location.href);
+    history.pushState({launchboardGuard:true},'',location.href);
+    let handling=false;
+    addEventListener('popstate',()=>{
+      if(handling)return;
+      handling=true;
+      location.replace('index.html');
     });
   }
 
-  function initialize() {
-    installVisibleBackButton();
-
-    // Only intercept hardware Back on mobile-sized screens / WebViews.
-    if (window.matchMedia('(max-width: 760px)').matches) {
-      installAndroidBackHandler();
-    }
+  function start(){
+    installMobileBottomNav();
+    installMobileBackButton();
+    installAndroidBackGuard();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize, { once: true });
-  } else {
-    initialize();
-  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
 })();
 

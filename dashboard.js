@@ -3,10 +3,68 @@ const MAX=5*1024*1024,TYPES=new Set(['image/jpeg','image/png','image/webp','imag
 async function waitAuth(){if(authReady)return;if(!authReady)await new Promise(r=>document.addEventListener('launchboard:auth-ready',r,{once:true}))}
 async function upload(bucket,file){if(!TYPES.has(file.type))throw Error('Choose a JPG, PNG, WebP or GIF image.');if(file.size>MAX)throw Error('Image must be 5 MB or smaller.');const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'');const path=`${currentUser.id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;const {error}=await sb.storage.from(bucket).upload(path,file,{contentType:file.type});if(error)throw error;return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl}
 function preview(input,img,wrap,circle=false){const f=input.files?.[0];if(!f)return;if(!TYPES.has(f.type)||f.size>MAX){input.value='';return toast('Choose a supported image no larger than 5 MB.')}img.src=URL.createObjectURL(f);wrap.hidden=false}
-async function load(){await waitAuth();if(!currentUser)return location.href='index.html';const [a,p,n]=await Promise.all([sb.rpc('creator_analytics'),sb.from('products').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),sb.from('notifications').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(12)]);if(p.error)return toast(p.error.message);mine=p.data||[];const d=a.data||{};$('#analytics').innerHTML=Object.entries({Products:d.products||mine.length,Views:d.views||0,Clicks:d.clicks||0,Likes:d.likes||0,Followers:d.followers||0,Reviews:d.reviews||0}).map(([k,v])=>`<div class="card stat-card"><span class="muted">${k}</span><strong>${v}</strong></div>`).join('');$('#myProducts').innerHTML=mine.map(x=>`<div class="review management"><div><strong>${esc(x.title)}</strong><div class="muted">${x.views||0} views · ${x.clicks||0} clicks ${x.is_premium?'· Premium':''}</div></div><div class="row"><a class="btn btn-ghost" href="product.html?id=${x.id}">Open</a><button class="btn btn-soft" data-edit="${x.id}">Edit</button><button class="btn btn-danger" data-delete="${x.id}">Delete</button></div></div>`).join('')||'<p>No products yet.</p>';$('#notifications').innerHTML=(n.data||[]).map(x=>`<a class="card notice ${x.is_read?'':'unread'}" href="${esc(x.link||'#')}"><strong>${esc(x.title)}</strong><p class="muted">${esc(x.body)}</p></a>`).join('')||'<p class="muted">No notifications.</p>';fillProfile();await sb.from('notifications').update({is_read:true}).eq('user_id',currentUser.id).eq('is_read',false)}
+
+
+function renderDashboardIdentity(){
+  const name=currentProfile?.full_name||currentProfile?.username||currentUser?.email?.split('@')[0]||'My profile';
+  const nameEl=$('#dashboardIdentityName');
+  const avatarEl=$('#dashboardIdentityAvatar');
+  const publicLink=$('#viewPublicProfileLink');
+
+  if(nameEl)nameEl.textContent=name;
+  if(publicLink&&currentUser)publicLink.href=`creator.html?id=${encodeURIComponent(currentUser.id)}`;
+
+  if(avatarEl){
+    if(currentProfile?.avatar_url){
+      avatarEl.innerHTML=`<img src="${esc(safeUrl(currentProfile.avatar_url,''))}" alt="">`;
+    }else{
+      avatarEl.textContent=name.slice(0,1).toUpperCase();
+    }
+  }
+}
+
+function setupDashboardProfileMenu(){
+  const identity=$('#dashboardIdentity');
+  const menu=$('#dashboardProfileMenu');
+  if(!identity||!menu)return;
+
+  identity.addEventListener('click',()=>{
+    menu.hidden=!menu.hidden;
+    identity.setAttribute('aria-expanded',String(!menu.hidden));
+  });
+
+  $('#editCreatorProfileButton')?.addEventListener('click',()=>{
+    menu.hidden=true;
+    identity.setAttribute('aria-expanded','false');
+    $('#creatorProfileEditor')?.scrollIntoView({behavior:'smooth',block:'start'});
+    window.setTimeout(()=>$('#profileForm input[name="full_name"]')?.focus(),350);
+  });
+
+  $('#dashboardLogoutButton')?.addEventListener('click',async()=>{
+    const {error}=await sb.auth.signOut();
+    if(error)return toast(error.message);
+    location.href='index.html';
+  });
+
+  document.addEventListener('click',event=>{
+    if(!menu.hidden&&!event.target.closest('.dashboard-head-actions')){
+      menu.hidden=true;
+      identity.setAttribute('aria-expanded','false');
+    }
+  });
+}
+
+function openPublishFromMobileNavigation(){
+  const params=new URLSearchParams(location.search);
+  if(params.get('publish')==='1'){
+    window.setTimeout(()=>openProduct(),250);
+  }
+}
+
+async function load(){await waitAuth();if(!currentUser)return location.href='index.html';const [a,p,n]=await Promise.all([sb.rpc('creator_analytics'),sb.from('products').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),sb.from('notifications').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(12)]);if(p.error)return toast(p.error.message);mine=p.data||[];const d=a.data||{};$('#analytics').innerHTML=Object.entries({Products:d.products||mine.length,Views:d.views||0,Clicks:d.clicks||0,Likes:d.likes||0,Followers:d.followers||0,Reviews:d.reviews||0}).map(([k,v])=>`<div class="card stat-card"><span class="muted">${k}</span><strong>${v}</strong></div>`).join('');$('#myProducts').innerHTML=mine.map(x=>`<div class="review management"><div><strong>${esc(x.title)}</strong><div class="muted">${x.views||0} views · ${x.clicks||0} clicks ${x.is_premium?'· Premium':''}</div></div><div class="row"><a class="btn btn-ghost" href="product.html?id=${x.id}">Open</a><button class="btn btn-soft" data-edit="${x.id}">Edit</button><button class="btn btn-danger" data-delete="${x.id}">Delete</button></div></div>`).join('')||'<p>No products yet.</p>';$('#notifications').innerHTML=(n.data||[]).map(x=>`<a class="card notice ${x.is_read?'':'unread'}" href="${esc(x.link||'#')}"><strong>${esc(x.title)}</strong><p class="muted">${esc(x.body)}</p></a>`).join('')||'<p class="muted">No notifications.</p>';fillProfile();renderDashboardIdentity();await sb.from('notifications').update({is_read:true}).eq('user_id',currentUser.id).eq('is_read',false)}
 function fillProfile(){if(!currentProfile)return;for(const k of ['full_name','username','bio','website_url','location'])$('#profileForm').elements[k].value=currentProfile[k]||'';$('#avatarUrl').value=currentProfile.avatar_url||'';if(currentProfile.avatar_url){$('#avatarPreview').src=currentProfile.avatar_url;$('#avatarPreviewWrap').hidden=false}}
 async function saveProfile(e){e.preventDefault();const f=new FormData(e.target),file=f.get('avatar_file');let url=$('#avatarUrl').value||null;try{if(file?.size)url=await upload('avatars',file);const {error}=await sb.rpc('update_my_profile',{p_full_name:f.get('full_name'),p_username:f.get('username'),p_bio:f.get('bio'),p_avatar_url:url,p_website_url:f.get('website_url'),p_location:f.get('location')});if(error)throw error;toast('Profile updated.','success');await refreshIdentity();fillProfile()}catch(x){toast(x.message)}}
 function openProduct(p=null){const f=$('#productForm');f.reset();f.elements.product_id.value=p?.id||'';for(const k of ['title','creator','price','category','product_type','brand','country','product_url','description'])if(p)f.elements[k].value=p[k]||'';f.elements.tags.value=p?.tags?.join(', ')||'';f.elements.image_url.value=p?.image_url||'';$('#productModalTitle').textContent=p?'Edit product':'Publish a product';$('#saveProduct').textContent=p?'Save changes':'Publish immediately';$('#productImagePreviewWrap').hidden=!p?.image_url;if(p?.image_url)$('#productImagePreview').src=p.image_url;$('#titleCount').textContent=f.elements.title.value.length;$('#productModal').showModal()}
 async function saveProduct(e){e.preventDefault();const f=new FormData(e.target),file=f.get('image_file'),id=f.get('product_id');let image=f.get('image_url')||null;try{if(file?.size)image=await upload('product-images',file);const item={title:f.get('title').trim(),creator:f.get('creator').trim(),price:f.get('price').trim()||'View price',category:f.get('category'),product_type:f.get('product_type'),brand:f.get('brand').trim()||null,country:f.get('country').trim()||null,image_url:image,product_url:f.get('product_url'),description:f.get('description').trim(),tags:String(f.get('tags')||'').split(',').map(x=>x.trim()).filter(Boolean),updated_at:new Date().toISOString()};const q=id?sb.from('products').update(item).eq('id',id).eq('owner_id',currentUser.id):sb.from('products').insert({...item,owner_id:currentUser.id});const {error}=await q;if(error)throw error;$('#productModal').close();toast(id?'Product updated.':'Product is live.','success');load()}catch(x){toast(x.message)}}
 async function remove(id){const p=mine.find(x=>x.id===id);if(!confirm(`Delete "${p?.title||'this product'}" permanently?`))return;const {error}=await sb.from('products').delete().eq('id',id).eq('owner_id',currentUser.id);if(error)return toast(error.message);toast('Product deleted.','success');load()}
-window.addEventListener('DOMContentLoaded',()=>{cats.forEach(c=>$('#productCategory').insertAdjacentHTML('beforeend',`<option>${esc(c)}</option>`));$('#openSubmit').onclick=()=>openProduct();$('#closeProductModal').onclick=()=>$('#productModal').close();$('#profileForm').onsubmit=saveProfile;$('#productForm').onsubmit=saveProduct;$('#avatarFile').onchange=()=>preview($('#avatarFile'),$('#avatarPreview'),$('#avatarPreviewWrap'));$('#productImageFile').onchange=()=>preview($('#productImageFile'),$('#productImagePreview'),$('#productImagePreviewWrap'));$('#productForm').elements.title.oninput=e=>$('#titleCount').textContent=e.target.value.length;$('#myProducts').onclick=e=>{const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-delete]');if(eb)openProduct(mine.find(x=>x.id===eb.dataset.edit));if(db)remove(db.dataset.delete)};load()});
+window.addEventListener('DOMContentLoaded',()=>{setupDashboardProfileMenu();openPublishFromMobileNavigation();cats.forEach(c=>$('#productCategory').insertAdjacentHTML('beforeend',`<option>${esc(c)}</option>`));$('#openSubmit').onclick=()=>openProduct();$('#closeProductModal').onclick=()=>$('#productModal').close();$('#profileForm').onsubmit=saveProfile;$('#productForm').onsubmit=saveProduct;$('#avatarFile').onchange=()=>preview($('#avatarFile'),$('#avatarPreview'),$('#avatarPreviewWrap'));$('#productImageFile').onchange=()=>preview($('#productImageFile'),$('#productImagePreview'),$('#productImagePreviewWrap'));$('#productForm').elements.title.oninput=e=>$('#titleCount').textContent=e.target.value.length;$('#myProducts').onclick=e=>{const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-delete]');if(eb)openProduct(mine.find(x=>x.id===eb.dataset.edit));if(db)remove(db.dataset.delete)};load()});
