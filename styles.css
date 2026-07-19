@@ -3211,3 +3211,27 @@ dialog.modal > .pad {
   }
 }
 
+
+/* =========================================================
+   V7.1 MOBILE HEADER WITHOUT HAMBURGER
+   ========================================================= */
+
+@media (max-width:760px) {
+  .mobile-menu-button,
+  #mobileMenuButton {
+    display: none !important;
+  }
+
+  .topbar .nav {
+    justify-content: flex-start !important;
+  }
+
+  .topbar .brand {
+    margin-right: auto !important;
+  }
+
+  .mobile-guest-actions {
+    margin-left: auto !important;
+  }
+}
+

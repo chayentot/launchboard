@@ -332,97 +332,6 @@ window.addEventListener('DOMContentLoaded',()=>{
 })();
 
 
-/* V6.1.2 Android hardware back handling without browser-history redirects */
-(function installNativeAndroidBackHandler(){
-  function page(){
-    return (location.pathname.split('/').pop()||'index.html').toLowerCase();
-  }
-
-  function start(){
-    const capacitorApp=window.Capacitor?.Plugins?.App;
-    if(!capacitorApp?.addListener)return;
-
-    capacitorApp.addListener('backButton',({canGoBack})=>{
-      const current=page();
-
-      if(current==='index.html'){
-        // Allow Android to minimize/exit only from Home.
-        capacitorApp.exitApp?.();
-        return;
-      }
-
-      // All inner pages return to Home.
-      location.href='index.html';
-    });
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',start,{once:true});
-  }else{
-    start();
-  }
-})();
-
-
-/* V6.3 functional mobile account menu */
-(function(){
-  function buildMenu(){
-    const links=$('#mobileMenuLinks');
-    if(!links)return;
-
-    if(currentUser){
-      links.innerHTML=`
-        <a href="dashboard.html">My dashboard</a>
-        <a href="dashboard.html?publish=1">Publish a product</a>
-        <a href="messages.html">Messages</a>
-        <a href="creator.html?id=${encodeURIComponent(currentUser.id)}">My public profile</a>
-        <button type="button" id="mobileMenuLogout">Log out</button>`;
-      $('#mobileMenuLogout')?.addEventListener('click',async()=>{
-        const {error}=await sb.auth.signOut();
-        if(error)return toast(error.message);
-        location.href='index.html';
-      });
-    }else{
-      links.innerHTML=`
-        <button type="button" id="mobileMenuLogin">Log in</button>
-        <button type="button" id="mobileMenuSignup">Create account</button>
-        <a href="#discover">Discover products</a>
-        <a href="#creators">Featured creators</a>`;
-      $('#mobileMenuLogin')?.addEventListener('click',()=>{
-        $('#mobileMenu')?.close?.();
-        $('#loginModal')?.showModal?.();
-      });
-      $('#mobileMenuSignup')?.addEventListener('click',()=>{
-        $('#mobileMenu')?.close?.();
-        $('#signupModal')?.showModal?.();
-      });
-    }
-  }
-
-  function start(){
-    const button=$('#mobileMenuButton');
-    const menu=$('#mobileMenu');
-    if(!button||!menu)return;
-
-    button.addEventListener('click',()=>{
-      buildMenu();
-      menu.showModal?.();
-    });
-
-    $$('[data-close-mobile-menu]').forEach(closeButton=>{
-      closeButton.addEventListener('click',()=>menu.close?.());
-    });
-
-    menu.addEventListener('click',event=>{
-      if(event.target===menu)menu.close();
-    });
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
-})();
-
-
 /* V7 guest login/sign-up visibility */
 (function(){
   function updateGuestActions(){
@@ -436,6 +345,102 @@ window.addEventListener('DOMContentLoaded',()=>{
     $('#mobileGuestSignup')?.addEventListener('click',()=>$('#signupModal')?.showModal?.());
     updateGuestActions();
     document.addEventListener('launchboard:auth-ready',updateGuestActions);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+})();
+
+
+/* =========================================================
+   V7.1 ANDROID BACK NAVIGATION
+   - Inner pages return to Home.
+   - Home requires a second Back press to exit.
+   - Does not interfere with normal links.
+   ========================================================= */
+(function(){
+  function page(){
+    return (location.pathname.split('/').pop()||'index.html').toLowerCase();
+  }
+
+  let lastHomeBackPress=0;
+
+  function showHomeExitHint(){
+    if(typeof toast==='function'){
+      toast('Press Back again to exit.');
+    }
+  }
+
+  function handleNativeBack(){
+    const current=page();
+    const capacitorApp=window.Capacitor?.Plugins?.App;
+
+    if(current!=='index.html'){
+      location.href='index.html';
+      return;
+    }
+
+    const now=Date.now();
+    if(now-lastHomeBackPress<1800){
+      capacitorApp?.exitApp?.();
+      return;
+    }
+
+    lastHomeBackPress=now;
+    showHomeExitHint();
+  }
+
+  function installCapacitorHandler(){
+    const capacitorApp=window.Capacitor?.Plugins?.App;
+    if(!capacitorApp?.addListener)return false;
+
+    capacitorApp.addListener('backButton',handleNativeBack);
+    return true;
+  }
+
+  function installBrowserHistoryGuard(){
+    if(!matchMedia('(max-width:760px)').matches)return;
+
+    const current=page();
+
+    if(current==='index.html'){
+      history.replaceState({launchboardRoot:true},'',location.href);
+      history.pushState({launchboardGuard:true},'',location.href);
+
+      addEventListener('popstate',()=>{
+        history.pushState({launchboardGuard:true},'',location.href);
+        const now=Date.now();
+
+        if(now-lastHomeBackPress<1800){
+          window.close();
+          return;
+        }
+
+        lastHomeBackPress=now;
+        showHomeExitHint();
+      });
+
+      return;
+    }
+
+    history.replaceState({launchboardPage:current},'',location.href);
+    history.pushState({launchboardGuard:true},'',location.href);
+
+    let redirecting=false;
+    addEventListener('popstate',()=>{
+      if(redirecting)return;
+      redirecting=true;
+      location.replace('index.html');
+    });
+  }
+
+  function start(){
+    if(!installCapacitorHandler()){
+      installBrowserHistoryGuard();
+    }
   }
 
   if(document.readyState==='loading'){
