@@ -103,6 +103,18 @@ function formatMessageError(error){
   return message;
 }
 
+
+function formatConversationTime(value){
+  if(!value)return '';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  const now=new Date();
+  const sameDay=date.toDateString()===now.toDateString();
+  return sameDay
+    ? date.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})
+    : date.toLocaleDateString([], {month:'short',day:'numeric'});
+}
+
 function filteredConversations(){
   const query=($('#conversationSearch')?.value||'').trim().toLowerCase();
   if(!query)return conversations;
@@ -136,10 +148,13 @@ function renderConversationList(){
       ? `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="">`
       : `<span>${esc(name.slice(0,1).toUpperCase())}</span>`;
 
-    return `<button class="conversation ${conversation.id===active?'active':''}" data-id="${conversation.id}" type="button">
-      <span class="conversation-avatar">${avatar}</span>
-      <span class="conversation-copy">
-        <strong>${esc(name)} ${badge(profile)}</strong>
+    return `<button class="messenger-conversation ${conversation.id===active?'active':''}" data-id="${conversation.id}" type="button">
+      <span class="messenger-avatar">${avatar}</span>
+      <span class="messenger-conversation-main">
+        <span class="messenger-conversation-topline">
+          <strong>${esc(name)} ${badge(profile)}</strong>
+          <time>${formatConversationTime(conversation.updated_at)}</time>
+        </span>
         <small>${esc(conversation.product?.title||'Direct conversation')}</small>
       </span>
     </button>`;
@@ -158,8 +173,8 @@ function renderConversationList(){
 function renderEmptyChat(){
   const title=$('#chatTitle');
   const messages=$('#messages');
-  if(title)title.innerHTML='<div><h2>Select a conversation</h2><p class="muted">Choose someone from your message list.</p></div>';
-  if(messages)messages.innerHTML='<div class="chat-empty-state"><span>✉</span><strong>Your messages will appear here</strong><p>Select a conversation or tap New.</p></div>';
+  if(title)title.innerHTML='<div><h2>Select a conversation</h2><p>Choose someone from your messages.</p></div>';
+  if(messages)messages.innerHTML='<div class="messenger-empty"><span>✉</span><strong>Your messages will appear here</strong><p>Select a conversation or tap +.</p></div>';
 }
 
 async function loadMessages(){
@@ -172,9 +187,14 @@ async function loadMessages(){
   const profile=conversation.otherProfile||{};
   const name=profile.full_name||profile.username||'Conversation';
 
-  $('#chatTitle').innerHTML=`<div>
-    <h2>${esc(name)}</h2>
-    <p class="muted">${esc(conversation.product?.title||'Direct message')}</p>
+  $('#chatTitle').innerHTML=`<div class="messenger-chat-person">
+    <span class="messenger-header-avatar">${profile.avatar_url
+      ? `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="">`
+      : esc(name.slice(0,1).toUpperCase())}</span>
+    <div>
+      <h2>${esc(name)}</h2>
+      <p>${esc(conversation.product?.title||'Direct message')}</p>
+    </div>
   </div>`;
 
   const {data,error}=await sb.from('messages')
@@ -189,10 +209,11 @@ async function loadMessages(){
 
   const container=$('#messages');
   container.innerHTML=(data||[]).map(message=>`
-    <div class="bubble ${message.sender_id===currentUser.id?'mine':''}">
-      ${esc(message.body)}
+    <div class="messenger-message-row ${message.sender_id===currentUser.id?'mine':''}">
+      <div class="messenger-bubble">${esc(message.body)}</div>
+      <time>${formatConversationTime(message.created_at)}</time>
     </div>`).join('')
-    ||'<div class="chat-empty-state"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>';
+    ||'<div class="messenger-empty"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>';
 
   container.scrollTop=container.scrollHeight;
 }

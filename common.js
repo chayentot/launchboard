@@ -422,3 +422,26 @@ window.addEventListener('DOMContentLoaded',()=>{
   else start();
 })();
 
+
+/* V7 guest login/sign-up visibility */
+(function(){
+  function updateGuestActions(){
+    const actions=$('#mobileGuestActions');
+    if(!actions)return;
+    actions.hidden=Boolean(currentUser);
+  }
+
+  function start(){
+    $('#mobileGuestLogin')?.addEventListener('click',()=>$('#loginModal')?.showModal?.());
+    $('#mobileGuestSignup')?.addEventListener('click',()=>$('#signupModal')?.showModal?.());
+    updateGuestActions();
+    document.addEventListener('launchboard:auth-ready',updateGuestActions);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+})();
+
