@@ -1989,3 +1989,11 @@
   }
 }
 
+
+
+/* V6.2 publish stability feedback */
+#saveProduct:disabled {
+  opacity: .68;
+  cursor: wait;
+  pointer-events: none;
+}
