@@ -313,20 +313,6 @@ window.addEventListener('DOMContentLoaded',()=>{
     header.insertBefore(button,header.firstChild);
   }
 
-  function installHardwareBackHandling(){
-    if(!matchMedia(MOBILE_QUERY).matches||page()==='index.html')return;
-
-    history.replaceState({launchboardPage:page()},'',location.href);
-    history.pushState({launchboardBackGuard:true},'',location.href);
-
-    let redirecting=false;
-    addEventListener('popstate',()=>{
-      if(redirecting)return;
-      redirecting=true;
-      location.replace('index.html');
-    });
-  }
-
   function addPageClass(){
     document.documentElement.classList.add('launchboard-v6');
     document.body.classList.add(`page-${page().replace('.html','')}`);
@@ -336,7 +322,38 @@ window.addEventListener('DOMContentLoaded',()=>{
     addPageClass();
     installBottomNavigation();
     installBackButton();
-    installHardwareBackHandling();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+})();
+
+
+/* V6.1.2 Android hardware back handling without browser-history redirects */
+(function installNativeAndroidBackHandler(){
+  function page(){
+    return (location.pathname.split('/').pop()||'index.html').toLowerCase();
+  }
+
+  function start(){
+    const capacitorApp=window.Capacitor?.Plugins?.App;
+    if(!capacitorApp?.addListener)return;
+
+    capacitorApp.addListener('backButton',({canGoBack})=>{
+      const current=page();
+
+      if(current==='index.html'){
+        // Allow Android to minimize/exit only from Home.
+        capacitorApp.exitApp?.();
+        return;
+      }
+
+      // All inner pages return to Home.
+      location.href='index.html';
+    });
   }
 
   if(document.readyState==='loading'){

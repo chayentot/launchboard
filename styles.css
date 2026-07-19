@@ -1325,3 +1325,55 @@
   }
 }
 
+
+/* =========================================================
+   V6.1.2 DISCOVER HEADING + NAVIGATION FIX
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .discover-heading-row {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    width: 100%;
+    margin-bottom: 8px !important;
+  }
+
+  .discover-heading-row h2 {
+    margin: 0 !important;
+    text-align: left !important;
+    font-size: 1rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .discover-heading-row #resultSummary {
+    flex: 0 0 auto;
+    max-width: none !important;
+    margin: 0 !important;
+    text-align: right !important;
+    font-size: .6rem !important;
+    line-height: 1.15 !important;
+    white-space: nowrap;
+  }
+
+  #discover .container {
+    display: block !important;
+  }
+
+  .compact-mobile-discovery-actions {
+    margin-top: 0 !important;
+  }
+
+  /* Ensure bottom navigation links remain clickable above page content. */
+  .mobile-bottom-nav {
+    pointer-events: auto !important;
+  }
+
+  .mobile-bottom-nav a {
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
