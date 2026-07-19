@@ -2056,3 +2056,192 @@
     cursor: pointer;
   }
 }
+
+
+/* =========================================================
+   V6.3.1 MOBILE MODAL / SHEET POLISH
+   Fixes oversized native dialog appearance on Android.
+   ========================================================= */
+
+dialog.modal {
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: var(--ink);
+}
+
+dialog.modal::backdrop {
+  background: rgba(20, 22, 34, .52) !important;
+  backdrop-filter: blur(2px);
+}
+
+dialog.modal > .pad {
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.mobile-menu-links {
+  display: grid;
+  gap: 6px;
+}
+
+.mobile-menu-links a,
+.mobile-menu-links button {
+  display: flex !important;
+  align-items: center;
+  width: 100% !important;
+  min-height: 44px;
+  padding: 0 12px !important;
+  border: 0 !important;
+  border-radius: 11px !important;
+  background: transparent !important;
+  color: var(--ink) !important;
+  font-size: .82rem !important;
+  font-weight: 750 !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+.mobile-menu-links a:hover,
+.mobile-menu-links button:hover {
+  background: #f4f2ff !important;
+}
+
+@media (max-width: 760px) {
+  dialog.modal {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 88vh !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  dialog.modal[open] {
+    display: block !important;
+  }
+
+  dialog.modal > .pad {
+    width: 100% !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom)) !important;
+    border-radius: 22px 22px 0 0 !important;
+    box-shadow: 0 -12px 38px rgba(20, 22, 34, .18);
+  }
+
+  dialog.modal .row.between {
+    position: sticky;
+    top: -18px;
+    z-index: 3;
+    align-items: center !important;
+    margin: -18px -16px 14px !important;
+    padding: 16px !important;
+    background: rgba(255,255,255,.98);
+    border-bottom: 1px solid var(--line);
+  }
+
+  dialog.modal h2 {
+    margin: 4px 0 0 !important;
+    font-size: 1.18rem !important;
+    line-height: 1.1 !important;
+  }
+
+  dialog.modal .eyebrow {
+    font-size: .58rem !important;
+  }
+
+  dialog.modal .btn,
+  dialog.modal button {
+    min-height: 40px;
+  }
+
+  #mobileFilterSheet .filter-sheet-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  #mobileFilterSheet label {
+    display: grid !important;
+    gap: 6px !important;
+    font-size: .72rem !important;
+    font-weight: 800 !important;
+  }
+
+  #mobileFilterSheet select,
+  #mobileFilterSheet input {
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 0 12px !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 11px !important;
+    background: #fff !important;
+    font-size: .8rem !important;
+  }
+
+  #mobileFilterSheet .filter-sheet-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1.25fr !important;
+    gap: 8px !important;
+    margin-top: 14px !important;
+  }
+
+  #mobileFilterSheet .filter-sheet-actions .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    border-radius: 11px !important;
+    font-size: .76rem !important;
+  }
+
+  #mobileMenu {
+    inset: auto 0 0 0 !important;
+  }
+
+  #mobileMenu .mobile-menu-links {
+    gap: 4px !important;
+    margin-top: 6px !important;
+  }
+
+  #mobileMenu .mobile-menu-links a,
+  #mobileMenu .mobile-menu-links button {
+    min-height: 46px !important;
+    padding: 0 12px !important;
+    font-size: .8rem !important;
+  }
+
+  #mobileMenu [data-close-mobile-menu],
+  #mobileFilterSheet #closeMobileFilters {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 11px !important;
+    background: #fff !important;
+    font-size: .9rem !important;
+  }
+}
+
+@media (min-width: 761px) {
+  dialog.modal {
+    width: min(92vw, 620px) !important;
+    max-height: 86vh !important;
+    margin: auto !important;
+  }
+
+  dialog.modal > .pad {
+    max-height: 86vh;
+    overflow-y: auto;
+    padding: 22px;
+    border-radius: 18px;
+  }
+}
+
