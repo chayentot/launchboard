@@ -9,38 +9,6 @@ const sb=(window.supabase&&cfg.supabaseUrl&&cfg.supabaseKey)
 let currentUser=null;
 let currentProfile=null;
 let authReady=false;
-function formatPeso(value) {
-  if (value === null || value === undefined || value === "") {
-    return "";
-  }
-
-  const text = String(value).trim();
-
-  // Preserve non-numeric labels and prices already containing ₱.
-  if (
-    text.includes("₱") ||
-    text.toLowerCase() === "free" ||
-    text.toLowerCase() === "contact seller"
-  ) {
-    return text;
-  }
-
-  // Accept values containing commas.
-  const number = Number(text.replace(/,/g, ""));
-
-  if (!Number.isFinite(number)) {
-    return text;
-  }
-
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: Number.isInteger(number) ? 0 : 2,
-    maximumFractionDigits: 2
-  }).format(number);
-}
-
-window.formatPeso = formatPeso;
 
 function esc(value=''){
   return String(value).replace(/[&<>"']/g,char=>({
@@ -173,6 +141,38 @@ function renderNav(){
   $$('[data-open]').forEach(button=>{
     button.onclick=()=>$('#'+button.dataset.open)?.showModal();
   });
+
+  renderMobileMenu();
+}
+
+function renderMobileMenu(){
+  const links=$('#mobileMenuLinks');
+  if(!links)return;
+
+  if(currentUser){
+    links.innerHTML=`
+      <a href="dashboard.html"><span>Dashboard</span><small>Manage products and profile</small></a>
+      <a href="messages.html"><span>Messages</span><small>Open your conversations</small></a>
+      <a href="creator.html?id=${encodeURIComponent(currentUser.id)}"><span>Creator profile</span><small>View your public page</small></a>
+      <button id="mobileLogout" type="button"><span>Log out</span><small>Sign out of LaunchBoard</small></button>`;
+  }else{
+    links.innerHTML=`
+      <button data-open-mobile="loginModal" type="button"><span>Log in</span><small>Access your account</small></button>
+      <button data-open-mobile="signupModal" type="button"><span>Join free</span><small>Create a LaunchBoard account</small></button>`;
+  }
+
+  $('#mobileLogout')?.addEventListener('click',async()=>{
+    const {error}=await sb.auth.signOut();
+    if(error)return toast(error.message);
+    location.href='index.html';
+  });
+
+  $$('[data-open-mobile]',links).forEach(button=>{
+    button.addEventListener('click',()=>{
+      $('#mobileMenu')?.close();
+      $('#'+button.dataset.openMobile)?.showModal();
+    });
+  });
 }
 
 async function loginSubmit(event){
@@ -284,4 +284,9 @@ window.addEventListener('DOMContentLoaded',()=>{
       if(event.target===dialog)dialog.close();
     });
   });
+
+  const openMobileMenu=()=>$('#mobileMenu')?.showModal();
+  $('#mobileMenuButton')?.addEventListener('click',openMobileMenu);
+  $('#bottomProfileButton')?.addEventListener('click',openMobileMenu);
+  $('[data-close-mobile-menu]')?.addEventListener('click',()=>$('#mobileMenu')?.close());
 });
