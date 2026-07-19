@@ -293,108 +293,114 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 
 /* =========================================================
-   V5.2 RELIABLE MOBILE NAVIGATION
-   - Adds a visible back button on every inner page.
-   - Handles the Android hardware/keypad Back button.
-   - Messages, creator, and product pages return to Dashboard.
-   - Dashboard/Sell returns to the LaunchBoard homepage.
+   V5.3 DASHBOARD AS MOBILE HOME + RELIABLE BACK NAVIGATION
    ========================================================= */
 
 (function setupLaunchBoardMobileNavigation() {
   function currentPageName() {
-    const name = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    return name || 'index.html';
+    return (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   }
 
-  function mobileBackDestination() {
-    const page = currentPageName();
-
-    if (page === 'dashboard.html') {
-      return 'index.html';
-    }
-
-    if (
-      page === 'messages.html' ||
-      page === 'creator.html' ||
-      page === 'product.html' ||
-      page === 'profile.html' ||
-      page === 'edit-product.html'
-    ) {
-      return 'dashboard.html';
-    }
-
-    return 'index.html';
+  function isMobile() {
+    return window.matchMedia('(max-width: 760px)').matches;
   }
 
-  function navigateBack() {
-    const destination = mobileBackDestination();
+  function dashboardHome() {
+    return 'dashboard.html';
+  }
 
-    // Use a fixed destination instead of history.back().
-    // This prevents the Android WebView from closing when there
-    // is no usable browser-history entry.
-    location.href = destination;
+  function navigateToDashboard() {
+    if (currentPageName() === 'dashboard.html') return;
+    location.replace(dashboardHome());
   }
 
   function installVisibleBackButton() {
     const page = currentPageName();
-    if (page === 'index.html' || document.getElementById('mobileBackButton')) {
-      return;
-    }
+    if (page === 'dashboard.html' || page === 'index.html') return;
+    if (document.getElementById('mobileBackButton')) return;
 
     const nav = document.querySelector('.topbar .nav');
-    if (!nav) {
-      return;
-    }
+    if (!nav) return;
 
     const button = document.createElement('button');
     button.id = 'mobileBackButton';
     button.className = 'mobile-back-button';
     button.type = 'button';
-    button.setAttribute('aria-label', 'Go back');
+    button.setAttribute('aria-label', 'Back to dashboard');
     button.innerHTML = '<span aria-hidden="true">‹</span>';
+    button.addEventListener('click', navigateToDashboard);
 
-    button.addEventListener('click', navigateBack);
     nav.insertBefore(button, nav.firstChild);
   }
 
-  function installAndroidBackHandler() {
-    const page = currentPageName();
-    if (page === 'index.html') {
-      return;
-    }
+  function rewriteMobileHomeLinks() {
+    document.querySelectorAll(
+      '.mobile-bottom-nav a[href="index.html"], .mobile-bottom-nav a[href="./"], [data-mobile-home]'
+    ).forEach(function(link) {
+      link.setAttribute('href', dashboardHome());
+    });
+  }
 
-    // Add a history entry so the first Android hardware Back press
-    // fires popstate instead of immediately closing the WebView.
+  function installHardwareBackGuard() {
+    if (!isMobile()) return;
+
+    const page = currentPageName();
+
     history.replaceState(
-      { launchboardPage: page, launchboardGuard: false },
+      { launchboardPage: page, launchboardRoot: page === 'dashboard.html' },
       '',
       location.href
     );
     history.pushState(
-      { launchboardPage: page, launchboardGuard: true },
+      { launchboardGuard: true },
       '',
       location.href
     );
 
-    let handlingBack = false;
+    let handling = false;
 
-    window.addEventListener('popstate', function () {
-      if (handlingBack) {
+    window.addEventListener('popstate', function() {
+      if (handling) return;
+      handling = true;
+
+      if (page === 'dashboard.html') {
+        // Dashboard is now the mobile home/root. Keep the app open.
+        history.pushState({ launchboardGuard: true }, '', location.href);
+        handling = false;
+
+        if (typeof toast === 'function') {
+          toast('Dashboard is your home screen');
+        }
         return;
       }
 
-      handlingBack = true;
-      location.replace(mobileBackDestination());
+      location.replace(dashboardHome());
     });
+  }
+
+  function redirectSignedInMobileHome() {
+    const page = currentPageName();
+
+    // currentUser is populated by LaunchBoard auth before this delayed check.
+    if (
+      isMobile() &&
+      page === 'index.html' &&
+      typeof currentUser !== 'undefined' &&
+      currentUser
+    ) {
+      location.replace(dashboardHome());
+    }
   }
 
   function initialize() {
     installVisibleBackButton();
+    rewriteMobileHomeLinks();
+    installHardwareBackGuard();
 
-    // Only intercept hardware Back on mobile-sized screens / WebViews.
-    if (window.matchMedia('(max-width: 760px)').matches) {
-      installAndroidBackHandler();
-    }
+    // Allow auth initialization to finish before deciding whether
+    // index.html should become dashboard.html for a signed-in user.
+    window.setTimeout(redirectSignedInMobileHome, 350);
+    window.setTimeout(redirectSignedInMobileHome, 1200);
   }
 
   if (document.readyState === 'loading') {

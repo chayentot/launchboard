@@ -1074,3 +1074,184 @@
   }
 }
 
+
+/* =========================================================
+   V5.3 COMPACT PRODUCT PAGE + COMPACT DASHBOARD
+   ========================================================= */
+
+@media (max-width: 760px) {
+  /* Product page: dramatically reduce the oversized title block. */
+  .product-page-header {
+    margin-bottom: 10px !important;
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .product-page-header .eyebrow {
+    margin-bottom: 5px !important;
+    padding: 5px 8px !important;
+    font-size: .62rem !important;
+    letter-spacing: .08em !important;
+  }
+
+  .product-page-header h1 {
+    margin: 5px 0 4px !important;
+    font-size: clamp(1.38rem, 7vw, 1.85rem) !important;
+    line-height: 1.03 !important;
+    letter-spacing: -.035em !important;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .product-page-price {
+    margin: 2px 0 !important;
+    font-size: 1.25rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .product-page-header .creator,
+  .product-page-header .product-meta,
+  .product-page-header p {
+    margin: 3px 0 0 !important;
+    font-size: .72rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .product-detail-grid {
+    gap: 10px !important;
+  }
+
+  .detail-media {
+    min-height: 0 !important;
+    height: min(96vw, 420px) !important;
+    padding: 5px !important;
+    border-radius: 16px !important;
+  }
+
+  .product-actions-card,
+  .product-detail-grid .card,
+  .review-card,
+  .creator-card {
+    border-radius: 16px !important;
+  }
+
+  .product-detail-grid .pad,
+  .product-actions-card .pad {
+    padding: 15px !important;
+  }
+
+  /* Dashboard: reduce the large heading and empty vertical gaps. */
+  .page {
+    padding: 16px 0 84px !important;
+  }
+
+  .dashboard-header,
+  .dashboard-hero,
+  .creator-workspace,
+  .page-header {
+    margin-bottom: 12px !important;
+    padding: 14px !important;
+  }
+
+  .dashboard-header h1,
+  .dashboard-hero h1,
+  .creator-workspace h1,
+  .page-header h1,
+  .page h1 {
+    margin: 5px 0 8px !important;
+    font-size: 1.75rem !important;
+    line-height: 1.05 !important;
+    letter-spacing: -.035em !important;
+  }
+
+  .dashboard-header .eyebrow,
+  .dashboard-hero .eyebrow,
+  .creator-workspace .eyebrow {
+    padding: 5px 8px !important;
+    font-size: .61rem !important;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .stat-card {
+    min-height: 76px !important;
+    padding: 11px !important;
+    border-radius: 14px !important;
+  }
+
+  .stat-card strong {
+    margin-top: 2px !important;
+    font-size: 1.18rem !important;
+    line-height: 1 !important;
+  }
+
+  .stat-card span,
+  .stat-card small {
+    font-size: .67rem !important;
+  }
+
+  .management {
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .management h2,
+  .page .section h2,
+  .page h2 {
+    font-size: 1.35rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .management .btn,
+  .dashboard-header .btn,
+  .dashboard-hero .btn {
+    padding: 9px 11px !important;
+    border-radius: 11px !important;
+    font-size: .72rem !important;
+  }
+
+  .dashboard-grid + .section,
+  .page .section {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+  }
+
+  .form-grid {
+    gap: 9px !important;
+  }
+
+  .form-grid .field,
+  .form-grid input,
+  .form-grid textarea,
+  .form-grid select {
+    padding: 10px 12px !important;
+    border-radius: 11px !important;
+    font-size: .82rem !important;
+  }
+
+  .form-grid textarea {
+    min-height: 78px !important;
+  }
+
+  /* Dashboard is the selected mobile home. */
+  .mobile-bottom-nav a[href="dashboard.html"] {
+    color: var(--brand) !important;
+  }
+
+  .mobile-bottom-nav a[href="index.html"] {
+    color: var(--muted) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
