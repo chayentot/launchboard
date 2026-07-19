@@ -1997,3 +1997,62 @@
   cursor: wait;
   pointer-events: none;
 }
+
+
+/* =========================================================
+   V6.3 FUNCTIONAL HOME CONTROLS
+   ========================================================= */
+
+.creator-directory-modal {
+  width: min(94vw, 720px);
+  max-height: 84vh;
+}
+
+.creator-directory-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.compact-empty {
+  min-height: 110px !important;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+@media (max-width:760px) {
+  #discover .discover-controls-left {
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    gap: 7px !important;
+    width: 100% !important;
+  }
+
+  #discover .discover-controls-left > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 8px !important;
+    font-size: .64rem !important;
+  }
+
+  .creator-directory-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 8px;
+  }
+
+  .creator-directory-grid .creator-card {
+    min-height: 118px;
+  }
+
+  .mobile-menu-links button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+}

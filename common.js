@@ -363,3 +363,62 @@ window.addEventListener('DOMContentLoaded',()=>{
   }
 })();
 
+
+/* V6.3 functional mobile account menu */
+(function(){
+  function buildMenu(){
+    const links=$('#mobileMenuLinks');
+    if(!links)return;
+
+    if(currentUser){
+      links.innerHTML=`
+        <a href="dashboard.html">My dashboard</a>
+        <a href="dashboard.html?publish=1">Publish a product</a>
+        <a href="messages.html">Messages</a>
+        <a href="creator.html?id=${encodeURIComponent(currentUser.id)}">My public profile</a>
+        <button type="button" id="mobileMenuLogout">Log out</button>`;
+      $('#mobileMenuLogout')?.addEventListener('click',async()=>{
+        const {error}=await sb.auth.signOut();
+        if(error)return toast(error.message);
+        location.href='index.html';
+      });
+    }else{
+      links.innerHTML=`
+        <button type="button" id="mobileMenuLogin">Log in</button>
+        <button type="button" id="mobileMenuSignup">Create account</button>
+        <a href="#discover">Discover products</a>
+        <a href="#creators">Featured creators</a>`;
+      $('#mobileMenuLogin')?.addEventListener('click',()=>{
+        $('#mobileMenu')?.close?.();
+        $('#loginModal')?.showModal?.();
+      });
+      $('#mobileMenuSignup')?.addEventListener('click',()=>{
+        $('#mobileMenu')?.close?.();
+        $('#signupModal')?.showModal?.();
+      });
+    }
+  }
+
+  function start(){
+    const button=$('#mobileMenuButton');
+    const menu=$('#mobileMenu');
+    if(!button||!menu)return;
+
+    button.addEventListener('click',()=>{
+      buildMenu();
+      menu.showModal?.();
+    });
+
+    $$('[data-close-mobile-menu]').forEach(closeButton=>{
+      closeButton.addEventListener('click',()=>menu.close?.());
+    });
+
+    menu.addEventListener('click',event=>{
+      if(event.target===menu)menu.close();
+    });
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+})();
+

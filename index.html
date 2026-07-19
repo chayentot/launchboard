@@ -135,7 +135,7 @@
           <span class="eyebrow">People to discover</span>
           <h2>Featured creators</h2>
         </div>
-        <a class="text-button" href="creator.html">See creators</a>
+        <button class="text-button" id="seeCreatorsButton" type="button">See creators</button>
       </div>
       <div class="creator-grid" id="topCreators"></div>
     </div>
@@ -212,6 +212,20 @@
   <a href="messages.html"><span>✉</span><small>Messages</small></a>
   <a href="dashboard.html"><span>◎</span><small>Profile</small></a>
 </nav>
+
+
+<dialog class="modal creator-directory-modal" id="creatorDirectoryModal" aria-labelledby="creatorDirectoryTitle">
+  <div class="pad">
+    <div class="row between">
+      <div>
+        <span class="eyebrow">Creator directory</span>
+        <h2 id="creatorDirectoryTitle">Discover creators</h2>
+      </div>
+      <button class="btn btn-ghost" id="closeCreatorDirectory" type="button">Close</button>
+    </div>
+    <div class="creator-directory-grid" id="creatorDirectoryGrid"></div>
+  </div>
+</dialog>
 
 <div class="toast" id="toast"></div>
 <dialog class="modal" id="reportModal">
