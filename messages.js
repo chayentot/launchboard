@@ -1,6 +1,9 @@
 let active=new URLSearchParams(location.search).get('conversation');
 let conversations=[];
 let memberProfiles={};
+let creatorDirectory=[];
+let followedCreatorIds=new Set();
+let creatorMode='following';
 
 async function loadConversations(){
   if(!currentUser){
@@ -29,13 +32,11 @@ async function loadConversations(){
       {data:conversationRows,error:conversationError},
       {data:allMembers,error:membersError}
     ]=await Promise.all([
-      sb
-        .from('conversations')
+      sb.from('conversations')
         .select('id,product_id,updated_at')
         .in('id',conversationIds)
         .order('updated_at',{ascending:false}),
-      sb
-        .from('conversation_members')
+      sb.from('conversation_members')
         .select('conversation_id,user_id')
         .in('conversation_id',conversationIds)
     ]);
@@ -84,29 +85,51 @@ async function loadConversations(){
 
     renderConversationList();
 
-    if(active){
-      await loadMessages();
-    }else{
-      renderEmptyChat();
-    }
+    if(active)await loadMessages();
+    else renderEmptyChat();
   }catch(error){
     console.error('Unable to load conversations:',error);
-    toast(error.message||'Unable to load messages.');
+    toast(formatMessageError(error));
     renderConversationList();
     renderEmptyChat();
   }
+}
+
+function formatMessageError(error){
+  const message=String(error?.message||error||'Unable to load messages.');
+  if(message.includes('infinite recursion')){
+    return 'Messaging permissions need the included Supabase policy update.';
+  }
+  return message;
+}
+
+function filteredConversations(){
+  const query=($('#conversationSearch')?.value||'').trim().toLowerCase();
+  if(!query)return conversations;
+  return conversations.filter(conversation=>{
+    const profile=conversation.otherProfile||{};
+    return [
+      profile.full_name,
+      profile.username,
+      conversation.product?.title
+    ].some(value=>String(value||'').toLowerCase().includes(query));
+  });
 }
 
 function renderConversationList(){
   const list=$('#conversationList');
   if(!list)return;
 
-  if(!conversations.length){
-    list.innerHTML='<div class="messages-empty-list"><strong>No conversations yet</strong><p>Open a product and message its creator to start a conversation.</p></div>';
+  const rows=filteredConversations();
+
+  if(!rows.length){
+    list.innerHTML=conversations.length
+      ? '<div class="messages-empty-list compact"><strong>No matches</strong><p>Try another creator or product name.</p></div>'
+      : '<div class="messages-empty-list"><strong>No conversations yet</strong><p>Tap New to search creators or message someone you follow.</p></div>';
     return;
   }
 
-  list.innerHTML=conversations.map(conversation=>{
+  list.innerHTML=rows.map(conversation=>{
     const profile=conversation.otherProfile||{};
     const name=profile.full_name||profile.username||'Member';
     const avatar=profile.avatar_url
@@ -117,7 +140,7 @@ function renderConversationList(){
       <span class="conversation-avatar">${avatar}</span>
       <span class="conversation-copy">
         <strong>${esc(name)} ${badge(profile)}</strong>
-        <small>${esc(conversation.product?.title||'General conversation')}</small>
+        <small>${esc(conversation.product?.title||'Direct conversation')}</small>
       </span>
     </button>`;
   }).join('');
@@ -136,7 +159,7 @@ function renderEmptyChat(){
   const title=$('#chatTitle');
   const messages=$('#messages');
   if(title)title.innerHTML='<div><h2>Select a conversation</h2><p class="muted">Choose someone from your message list.</p></div>';
-  if(messages)messages.innerHTML='<div class="chat-empty-state"><span>✉</span><strong>Your messages will appear here</strong><p>Select a conversation to begin.</p></div>';
+  if(messages)messages.innerHTML='<div class="chat-empty-state"><span>✉</span><strong>Your messages will appear here</strong><p>Select a conversation or tap New.</p></div>';
 }
 
 async function loadMessages(){
@@ -154,14 +177,13 @@ async function loadMessages(){
     <p class="muted">${esc(conversation.product?.title||'Direct message')}</p>
   </div>`;
 
-  const {data,error}=await sb
-    .from('messages')
+  const {data,error}=await sb.from('messages')
     .select('id,conversation_id,sender_id,body,created_at')
     .eq('conversation_id',active)
     .order('created_at',{ascending:true});
 
   if(error){
-    toast(error.message);
+    toast(formatMessageError(error));
     return;
   }
 
@@ -177,16 +199,11 @@ async function loadMessages(){
 
 async function send(event){
   event.preventDefault();
-
-  if(!active){
-    toast('Select a conversation first.');
-    return;
-  }
+  if(!active)return toast('Select a conversation first.');
 
   const form=event.target;
   const data=new FormData(form);
   const body=String(data.get('body')||'').trim();
-
   if(!body)return;
 
   const button=form.querySelector('button');
@@ -198,20 +215,122 @@ async function send(event){
       sender_id:currentUser.id,
       body
     });
-
     if(error)throw error;
-
     form.reset();
     await loadMessages();
   }catch(error){
-    toast(error.message||'Message could not be sent.');
+    toast(formatMessageError(error));
   }finally{
     button.disabled=false;
   }
 }
 
+async function loadCreatorDirectory(){
+  const [
+    {data:profiles,error:profilesError},
+    {data:follows,error:followsError}
+  ]=await Promise.all([
+    sb.from('profiles')
+      .select('id,full_name,username,avatar_url,is_verified,bio')
+      .neq('id',currentUser.id)
+      .order('full_name',{ascending:true}),
+    sb.from('creator_follows')
+      .select('creator_id')
+      .eq('follower_id',currentUser.id)
+  ]);
+
+  if(profilesError)throw profilesError;
+  if(followsError)throw followsError;
+
+  creatorDirectory=profiles||[];
+  followedCreatorIds=new Set((follows||[]).map(row=>row.creator_id));
+  renderCreatorDirectory();
+}
+
+function visibleCreators(){
+  const query=($('#creatorSearchInput')?.value||'').trim().toLowerCase();
+  return creatorDirectory.filter(profile=>{
+    const inMode=creatorMode==='all'||followedCreatorIds.has(profile.id);
+    const matches=!query||[
+      profile.full_name,
+      profile.username,
+      profile.bio
+    ].some(value=>String(value||'').toLowerCase().includes(query));
+    return inMode&&matches;
+  });
+}
+
+function renderCreatorDirectory(){
+  const target=$('#creatorMessageResults');
+  if(!target)return;
+
+  const rows=visibleCreators();
+  target.innerHTML=rows.map(profile=>{
+    const name=profile.full_name||profile.username||'Creator';
+    const avatar=profile.avatar_url
+      ? `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="">`
+      : `<span>${esc(name.slice(0,1).toUpperCase())}</span>`;
+
+    return `<article class="creator-message-row">
+      <span class="conversation-avatar">${avatar}</span>
+      <span class="creator-message-copy">
+        <strong>${esc(name)} ${badge(profile)}</strong>
+        <small>${esc(profile.bio||'Independent creator')}</small>
+      </span>
+      <button class="btn btn-primary" data-message-creator="${profile.id}" type="button">Message</button>
+    </article>`;
+  }).join('')||`<div class="messages-empty-list compact">
+    <strong>${creatorMode==='following'?'You are not following any matching creators':'No creators found'}</strong>
+    <p>${creatorMode==='following'?'Use All creators to find someone new.':'Try another name.'}</p>
+  </div>`;
+
+  $$('[data-message-creator]').forEach(button=>{
+    button.onclick=()=>startCreatorConversation(button.dataset.messageCreator);
+  });
+}
+
+async function startCreatorConversation(creatorId){
+  try{
+    const {data,error}=await sb.rpc('start_conversation',{
+      target_user:creatorId,
+      target_product:null
+    });
+    if(error)throw error;
+
+    active=data;
+    $('#creatorMessageModal')?.close?.();
+    history.replaceState(null,'',`messages.html?conversation=${encodeURIComponent(active)}`);
+    await loadConversations();
+  }catch(error){
+    toast(formatMessageError(error));
+  }
+}
+
+async function openCreatorSearch(){
+  $('#creatorMessageModal')?.showModal?.();
+  try{
+    await loadCreatorDirectory();
+  }catch(error){
+    toast(error.message||'Unable to load creators.');
+  }
+}
+
+function setCreatorMode(mode){
+  creatorMode=mode;
+  $('#followingCreatorsTab')?.classList.toggle('active',mode==='following');
+  $('#allCreatorsTab')?.classList.toggle('active',mode==='all');
+  renderCreatorDirectory();
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
   $('#messageForm').onsubmit=send;
+  $('#conversationSearch')?.addEventListener('input',renderConversationList);
+  $('#openCreatorSearch')?.addEventListener('click',openCreatorSearch);
+  $('#closeCreatorSearch')?.addEventListener('click',()=>$('#creatorMessageModal')?.close?.());
+  $('#creatorSearchInput')?.addEventListener('input',renderCreatorDirectory);
+  $('#followingCreatorsTab')?.addEventListener('click',()=>setCreatorMode('following'));
+  $('#allCreatorsTab')?.addEventListener('click',()=>setCreatorMode('all'));
+
   document.addEventListener('launchboard:auth-ready',loadConversations,{once:true});
   if(authReady)loadConversations();
 });

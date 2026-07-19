@@ -2684,3 +2684,130 @@ dialog.modal > .pad {
     font-size: .76rem !important;
   }
 }
+
+
+/* =========================================================
+   V6.5 CREATOR SEARCH + FOLLOWING IN MESSAGES
+   ========================================================= */
+
+.messages-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.messages-sidebar-head h2 {
+  margin: 0 !important;
+}
+
+.messages-new-button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--brand);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.messages-search-wrap {
+  margin-bottom: 8px;
+}
+
+.messages-list-search {
+  width: 100%;
+  min-height: 38px;
+  font-size: .72rem;
+}
+
+.messages-empty-list.compact {
+  min-height: 110px;
+}
+
+.creator-message-tabs {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px;
+  margin: 10px 0;
+}
+
+.creator-message-tabs button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 800;
+}
+
+.creator-message-tabs button.active {
+  border-color: rgba(111,70,255,.4);
+  background: #f1edff;
+  color: var(--brand);
+}
+
+.creator-message-results {
+  display: grid;
+  gap: 7px;
+  max-height: 52vh;
+  overflow-y: auto;
+}
+
+.creator-message-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.creator-message-copy {
+  min-width: 0;
+}
+
+.creator-message-copy strong,
+.creator-message-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creator-message-copy strong {
+  font-size: .75rem;
+}
+
+.creator-message-copy small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: .61rem;
+}
+
+.creator-message-row .btn {
+  min-height: 34px;
+  padding: 0 9px;
+  font-size: .62rem;
+}
+
+@media (max-width:760px) {
+  .creator-message-modal > .pad {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .creator-message-row {
+    grid-template-columns: 38px minmax(0,1fr) auto;
+  }
+
+  .creator-message-row .conversation-avatar {
+    width: 38px;
+    height: 38px;
+  }
+}

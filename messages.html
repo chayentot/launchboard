@@ -1,4 +1,35 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Messages · LaunchBoard</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script defer src="common.js"></script><script defer src="messages.js"></script></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">Launch<span>Board</span></a><nav class="navlinks"><a href="dashboard.html">Dashboard</a></nav><div class="actions" id="navActions"></div></div></header><main class="page"><div class="container"><div class="card message-layout"><aside class="sidebar"><h2>Messages</h2><div id="conversationList" class="conversation-list"></div></aside><section class="chat"><div id="chatTitle"><h2>Select a conversation</h2></div><div class="messages" id="messages"></div><form class="chat-form" id="messageForm"><input class="field" name="body" placeholder="Write a message" maxlength="2000" required><button class="btn btn-primary">Send</button></form></section></div></div></main><div class="toast" id="toast"></div>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Messages · LaunchBoard</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script defer src="common.js"></script><script defer src="messages.js"></script></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">Launch<span>Board</span></a><nav class="navlinks"><a href="dashboard.html">Dashboard</a></nav><div class="actions" id="navActions"></div></div></header><main class="page"><div class="container"><div class="card message-layout"><aside class="sidebar">
+      <div class="messages-sidebar-head">
+        <h2>Messages</h2>
+        <button class="messages-new-button" id="openCreatorSearch" type="button">New</button>
+      </div>
+      <div class="messages-search-wrap">
+        <input class="field messages-list-search" id="conversationSearch" type="search" placeholder="Search conversations">
+      </div>
+      <div id="conversationList" class="conversation-list"></div>
+    </aside><section class="chat"><div id="chatTitle"><h2>Select a conversation</h2></div><div class="messages" id="messages"></div><form class="chat-form" id="messageForm"><input class="field" name="body" placeholder="Write a message" maxlength="2000" required><button class="btn btn-primary">Send</button></form></section></div></div></main>
+<dialog class="modal creator-message-modal" id="creatorMessageModal" aria-labelledby="creatorMessageTitle">
+  <div class="pad">
+    <div class="row between">
+      <div>
+        <span class="eyebrow">New message</span>
+        <h2 id="creatorMessageTitle">Find a creator</h2>
+      </div>
+      <button class="btn btn-ghost" id="closeCreatorSearch" type="button">Close</button>
+    </div>
+
+    <input class="field full" id="creatorSearchInput" type="search" placeholder="Search creator name">
+
+    <div class="creator-message-tabs" role="tablist">
+      <button class="active" id="followingCreatorsTab" type="button">Following</button>
+      <button id="allCreatorsTab" type="button">All creators</button>
+    </div>
+
+    <div class="creator-message-results" id="creatorMessageResults"></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
 <dialog class="modal" id="reportModal">
   <div class="pad">
     <div class="row between"><h2>Report content</h2><button class="btn btn-ghost" type="button" data-close-dialog>Close</button></div>
