@@ -1027,3 +1027,42 @@
     font-size: .7rem;
   }
 }
+
+
+/* =========================================================
+   V5.1 MOBILE BACK BUTTON
+   Appears on Sell/Dashboard, Messages, Creator Profile,
+   Product details, and other inner pages.
+   ========================================================= */
+
+.mobile-back-button {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .mobile-back-button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: #fff;
+    color: var(--ink);
+    font-size: 2rem;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mobile-back-button span {
+    display: block;
+    transform: translateY(-1px);
+  }
+
+  .topbar .nav:has(.mobile-back-button) .brand {
+    font-size: 1.12rem;
+  }
+}

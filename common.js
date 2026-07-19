@@ -290,3 +290,33 @@ window.addEventListener('DOMContentLoaded',()=>{
   $('#bottomProfileButton')?.addEventListener('click',openMobileMenu);
   $('[data-close-mobile-menu]')?.addEventListener('click',()=>$('#mobileMenu')?.close());
 });
+
+
+/* V5.1 mobile back button for inner pages */
+function installMobileBackButton(){
+  const path=(location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  const isHome=path==='' || path==='index.html';
+  if(isHome || document.getElementById('mobileBackButton'))return;
+
+  const nav=document.querySelector('.topbar .nav');
+  if(!nav)return;
+
+  const button=document.createElement('button');
+  button.id='mobileBackButton';
+  button.className='mobile-back-button';
+  button.type='button';
+  button.setAttribute('aria-label','Go back');
+  button.innerHTML='<span aria-hidden="true">‹</span>';
+
+  button.addEventListener('click',()=>{
+    if(history.length>1){
+      history.back();
+    }else{
+      location.href='index.html';
+    }
+  });
+
+  nav.insertBefore(button,nav.firstChild);
+}
+
+document.addEventListener('DOMContentLoaded',installMobileBackButton);
