@@ -36,10 +36,11 @@
       </header>
 
       <div class="notifications-tabs" role="tablist" aria-label="Notification filters">
-        <button class="active" id="allNotificationsTab" type="button">All</button>
-        <button id="unreadNotificationsTab" type="button">
-          Unread <span id="notificationUnreadCount">0</span>
-        </button>
+        <button class="active" data-notification-filter="all" type="button">All</button>
+        <button data-notification-filter="unread" type="button">Unread <span id="notificationUnreadCount">0</span></button>
+        <button data-notification-filter="message" type="button">Messages</button>
+        <button data-notification-filter="social" type="button">Social</button>
+        <button data-notification-filter="product" type="button">Products</button>
       </div>
 
       <div class="notifications-list" id="notificationsList">

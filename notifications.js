@@ -35,15 +35,23 @@ function notificationTime(value){
   });
 }
 
+function notificationCategory(item){
+  const text=`${item.title||''} ${item.body||''}`.toLowerCase();
+  if(text.includes('message'))return 'message';
+  if(text.includes('like')||text.includes('follow')||text.includes('review'))return 'social';
+  return 'product';
+}
+
 function visibleNotifications(){
-  return notificationMode==='unread'
-    ? notificationRows.filter(item=>!item.is_read)
-    : notificationRows;
+  if(notificationMode==='unread')return notificationRows.filter(item=>!item.is_read);
+  if(notificationMode==='all')return notificationRows;
+  return notificationRows.filter(item=>notificationCategory(item)===notificationMode);
 }
 
 function renderNotificationTabs(){
-  $('#allNotificationsTab')?.classList.toggle('active',notificationMode==='all');
-  $('#unreadNotificationsTab')?.classList.toggle('active',notificationMode==='unread');
+  $$('[data-notification-filter]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.notificationFilter===notificationMode);
+  });
 
   const unread=notificationRows.filter(item=>!item.is_read).length;
   const count=$('#notificationUnreadCount');
@@ -163,14 +171,11 @@ async function markAllRead(){
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
-  $('#allNotificationsTab')?.addEventListener('click',()=>{
-    notificationMode='all';
-    renderNotifications();
-  });
-
-  $('#unreadNotificationsTab')?.addEventListener('click',()=>{
-    notificationMode='unread';
-    renderNotifications();
+  $$('[data-notification-filter]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      notificationMode=button.dataset.notificationFilter;
+      renderNotifications();
+    });
   });
 
   $('#markAllNotificationsRead')?.addEventListener('click',markAllRead);

@@ -1,4 +1,4 @@
-const LAUNCHBOARD_BUILD='7.4.1-full';
+const LAUNCHBOARD_BUILD='8.0.0';
 console.info('LaunchBoard build',LAUNCHBOARD_BUILD);
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));

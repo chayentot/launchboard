@@ -171,7 +171,16 @@ function openPublishFromMobileNavigation(){
   }
 }
 
-async function load(){await waitAuth();if(!currentUser)return location.href='index.html';const [a,p,n]=await Promise.all([sb.rpc('creator_analytics'),sb.from('products').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),sb.from('notifications').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(12)]);if(p.error)return toast(p.error.message);mine=p.data||[];const d=a.data||{};$('#analytics').innerHTML=Object.entries({Products:d.products||mine.length,Views:d.views||0,Clicks:d.clicks||0,Likes:d.likes||0,Followers:d.followers||0,Reviews:d.reviews||0}).map(([k,v])=>`<div class="card stat-card"><span class="muted">${k}</span><strong>${v}</strong></div>`).join('');$('#myProducts').innerHTML=mine.map(x=>`
+async function load(){await waitAuth();if(!currentUser)return location.href='index.html';const [a,p,n]=await Promise.all([sb.rpc('creator_analytics'),sb.from('products').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),sb.from('notifications').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(12)]);if(p.error)return toast(p.error.message);mine=p.data||[];const d=a.data||{};$('#analytics').innerHTML=Object.entries({
+  Products:d.products||mine.length,
+  Views:d.views||0,
+  Likes:d.likes||0,
+  Followers:d.followers||0
+}).map(([label,value])=>`
+  <div class="card stat-card v8-stat-card">
+    <strong>${Number(value||0).toLocaleString()}</strong>
+    <span>${label}</span>
+  </div>`).join('');$('#myProducts').innerHTML=mine.map(x=>`
     <article class="dashboard-product-card">
       <a class="dashboard-product-image" href="product.html?id=${x.id}" aria-label="Open ${esc(x.title)}">
         ${x.image_url

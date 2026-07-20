@@ -15,25 +15,48 @@ function productCard(product){
     : `<div class="image-placeholder">No image</div>`;
 
   return `
-    <article class="card product">
-      <div class="product-card-heading">
-        <div class="row between product-meta">
-          <span>${esc(product.category||'Other')}</span>
-          ${product.is_premium?'<span class="premium-pill">Premium</span>':''}
-        </div>
-        <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${esc(product.title)}</a></h3>
-        <strong class="product-price">${esc(formatPeso(product.price))}</strong>
-      </div>
-      <a class="product-media" href="product.html?id=${encodeURIComponent(product.id)}">${image}</a>
-      <div class="product-body">
-        <p class="muted">by <a href="creator.html?id=${encodeURIComponent(product.owner_id)}">${esc(creator.full_name||product.creator||'Creator')}</a> ${badge(creator)}</p>
-        <div class="product-signals">
+    <article class="card product v8-product-card">
+      <a class="product-media" href="product.html?id=${encodeURIComponent(product.id)}">
+        ${image}
+        ${product.is_premium?'<span class="v8-premium-badge">Premium</span>':''}
+      </a>
+      <div class="v8-card-content">
+        <div class="v8-card-signals">
           <span>♡ ${likeCounts[product.id]||0}</span>
-          <span>↗ ${product.clicks||0}</span>
           <span>◉ ${product.views||0}</span>
         </div>
+        <span class="v8-card-category">${esc(product.category||'Product')}</span>
+        <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${esc(product.title)}</a></h3>
+        <strong class="product-price">${esc(formatPeso(product.price))}</strong>
+        <a class="v8-card-creator" href="creator.html?id=${encodeURIComponent(product.owner_id)}">
+          ${esc(creator.full_name||product.creator||'Creator')} ${badge(creator)}
+        </a>
       </div>
     </article>`;
+}
+
+function compactProductCard(product){
+  const creator=creatorsById[product.owner_id]||{};
+  return `<a class="v8-mini-product" href="product.html?id=${encodeURIComponent(product.id)}">
+    <span class="v8-mini-image">
+      ${product.image_url
+        ? `<img src="${esc(safeUrl(product.image_url,''))}" alt="${esc(product.title)}" loading="lazy">`
+        : '<span>No image</span>'}
+    </span>
+    <span class="v8-mini-copy">
+      <strong>${esc(product.title)}</strong>
+      <b>${esc(formatPeso(product.price))}</b>
+      <small>${esc(creator.full_name||product.creator||'Creator')}</small>
+    </span>
+  </a>`;
+}
+
+function renderProductSkeletons(target,count=4){
+  if(!target)return;
+  target.innerHTML=Array.from({length:count},()=>`
+    <div class="v8-product-skeleton" aria-hidden="true">
+      <span></span><i></i><i></i><b></b>
+    </div>`).join('');
 }
 
 function creatorCard(profile,stats={}){
@@ -52,6 +75,10 @@ function creatorCard(profile,stats={}){
 }
 
 async function fetchDiscoveryData(){
+  renderProductSkeletons($('#productGrid'),4);
+  renderProductSkeletons($('#newTodayProducts'),4);
+  renderProductSkeletons($('#trendingProducts'),4);
+  renderProductSkeletons($('#recommendedProducts'),4);
   if(!sb){
     $('#productGrid').innerHTML='<div class="card empty-state"><h3>Supabase is not configured.</h3></div>';
     return;
@@ -82,6 +109,8 @@ async function fetchDiscoveryData(){
   renderCategoryControls();
   renderFeatured();
   renderProducts();
+  renderNewToday();
+  renderTrending();
   renderRecommendations();
   renderCreators(profilesResult.data||[],followsResult.data||[]);
 }
@@ -180,6 +209,42 @@ function renderRecommendations(){
   target.innerHTML=rows.map(productCard).join('')
     || '<div class="card empty-state compact-empty"><p>No products available yet.</p></div>';
 }
+
+
+function renderNewToday(){
+  const target=$('#newTodayProducts');
+  if(!target)return;
+
+  const now=Date.now();
+  const oneDay=24*60*60*1000;
+  let rows=allProducts.filter(product=>{
+    const created=new Date(product.created_at).getTime();
+    return Number.isFinite(created)&&now-created<=oneDay;
+  });
+
+  if(!rows.length)rows=[...allProducts].slice(0,8);
+  target.innerHTML=rows.slice(0,8).map(compactProductCard).join('')
+    || '<div class="v8-compact-empty">No new products yet.</div>';
+}
+
+function trendingScore(product){
+  return Number(product.views||0)
+    + Number(product.clicks||0)*3
+    + Number(likeCounts[product.id]||0)*5;
+}
+
+function renderTrending(){
+  const target=$('#trendingProducts');
+  if(!target)return;
+
+  const rows=[...allProducts]
+    .sort((a,b)=>trendingScore(b)-trendingScore(a))
+    .slice(0,8);
+
+  target.innerHTML=rows.map(compactProductCard).join('')
+    || '<div class="v8-compact-empty">Trending products will appear here.</div>';
+}
+
 
 function renderFeatured(){
   const products=allProducts
@@ -322,6 +387,11 @@ function initializeV63HomeControls(){
     visibleCount=PAGE_SIZE;
     renderProducts();
     renderRecommendations();
+  });
+
+  $('#refreshTrending')?.addEventListener('click',()=>{
+    renderTrending();
+    toast('Trending products refreshed.','success');
   });
 
   $('#refreshRecommendations')?.addEventListener('click',()=>{
