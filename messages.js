@@ -56,7 +56,7 @@ async function loadConversations(){
       {data:messageRows,error:messagesError}
     ]=await Promise.all([
       productIds.length
-        ? sb.from('products').select('id,title').in('id',productIds)
+        ? sb.from('products').select('id,title,price,image_url,creator,owner_id').in('id',productIds)
         : Promise.resolve({data:[],error:null}),
       otherUserIds.length
         ? sb.from('profiles').select('id,full_name,username,avatar_url,is_verified').in('id',otherUserIds)
@@ -258,6 +258,26 @@ function renderEmptyChat(){
   if(messages)messages.innerHTML='<div class="messenger-empty"><span>✉</span><strong>Your messages will appear here</strong><p>Select a conversation or tap +.</p></div>';
 }
 
+
+function renderProductReference(product){
+  const image=product.image_url
+    ? `<img src="${esc(safeUrl(product.image_url,''))}" alt="${esc(product.title||'Product')}">`
+    : '<span class="messenger-product-reference-placeholder">No image</span>';
+
+  return `<article class="messenger-product-reference" aria-label="Product being discussed">
+    <span class="messenger-product-reference-label">Talking about</span>
+    <a class="messenger-product-reference-card" href="product.html?id=${encodeURIComponent(product.id)}">
+      <span class="messenger-product-reference-image">${image}</span>
+      <span class="messenger-product-reference-copy">
+        <strong>${esc(product.title||'Product')}</strong>
+        <span>${esc(formatPeso(product.price))}</span>
+        <small>${product.creator?`by ${esc(product.creator)}`:'View product details'}</small>
+      </span>
+      <span class="messenger-product-reference-link">View product ›</span>
+    </a>
+  </article>`;
+}
+
 async function loadMessages(){
   const conversation=conversations.find(item=>item.id===active);
   if(!conversation){
@@ -277,9 +297,7 @@ async function loadMessages(){
       : esc(name.slice(0,1).toUpperCase())}</span>
     <div>
       <h2>${esc(name)}</h2>
-      ${conversation.product
-        ? `<a class="messenger-product-context" href="product.html?id=${encodeURIComponent(conversation.product.id)}">${esc(conversation.product.title)}</a>`
-        : '<p>Direct message</p>'}
+      <p>${conversation.product?'Product conversation':'Direct message'}</p>
     </div>
   </div>`;
 
@@ -294,12 +312,15 @@ async function loadMessages(){
   }
 
   const container=$('#messages');
-  container.innerHTML=(data||[]).map(message=>`
+  const productReference=conversation.product?renderProductReference(conversation.product):'';
+  const messageHistory=(data||[]).map(message=>`
     <div class="messenger-message-row ${message.sender_id===currentUser.id?'mine':''}">
       <div class="messenger-bubble">${esc(message.body)}</div>
       <time>${formatConversationTime(message.created_at)}</time>
-    </div>`).join('')
-    ||'<div class="messenger-empty"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>';
+    </div>`).join('');
+
+  container.innerHTML=productReference+(messageHistory
+    ||'<div class="messenger-empty compact"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>');
 
   container.scrollTop=container.scrollHeight;
   renderConversationList();

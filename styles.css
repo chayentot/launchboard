@@ -4401,3 +4401,104 @@ dialog.modal > .pad {
     gap: 10px !important;
   }
 }
+
+
+/* =========================================================
+   V8.1.3 PRODUCT CONVERSATION REFERENCE
+   ========================================================= */
+.messenger-product-reference {
+  margin: 0 0 16px;
+}
+
+.messenger-product-reference-label {
+  display: block;
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.messenger-product-reference-card {
+  display: grid;
+  grid-template-columns: 68px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  border: 1px solid #ddd7ff;
+  border-radius: 15px;
+  background: linear-gradient(135deg,#fff 0%,#f7f4ff 100%);
+  color: var(--ink);
+  box-shadow: 0 5px 18px rgba(73,55,160,.08);
+  text-decoration: none;
+}
+
+.messenger-product-reference-image {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  overflow: hidden;
+  border-radius: 11px;
+  background: #ececf3;
+}
+
+.messenger-product-reference-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.messenger-product-reference-placeholder {
+  color: var(--muted);
+  font-size: .58rem;
+  font-weight: 700;
+}
+
+.messenger-product-reference-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.messenger-product-reference-copy strong {
+  overflow: hidden;
+  font-size: .78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messenger-product-reference-copy > span {
+  color: var(--brand);
+  font-size: .76rem;
+  font-weight: 900;
+}
+
+.messenger-product-reference-copy small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: .58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messenger-product-reference-link {
+  color: var(--brand);
+  font-size: .61rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+@media (max-width:560px) {
+  .messenger-product-reference-card {
+    grid-template-columns: 62px minmax(0,1fr);
+  }
+  .messenger-product-reference-image {
+    width: 62px;
+    height: 62px;
+  }
+  .messenger-product-reference-link {
+    grid-column: 2;
+  }
+}
