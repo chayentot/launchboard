@@ -171,7 +171,7 @@ function openPublishFromMobileNavigation(){
   }
 }
 
-async function load(){await waitAuth();if(!currentUser)return location.href='index.html';const [a,p,n]=await Promise.all([sb.rpc('creator_analytics'),sb.from('products').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),sb.from('notifications').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(12)]);if(p.error)return toast(p.error.message);mine=p.data||[];const d=a.data||{};$('#analytics').innerHTML=Object.entries({
+async function load(){await waitAuth();if(!currentUser)return location.href='index.html';const [a,p]=await Promise.all([sb.rpc('creator_analytics'),sb.from('products').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false})]);if(p.error)return toast(p.error.message);mine=p.data||[];const d=a.data||{};$('#analytics').innerHTML=Object.entries({
   Products:d.products||mine.length,
   Views:d.views||0,
   Likes:d.likes||0,
@@ -201,7 +201,7 @@ async function load(){await waitAuth();if(!currentUser)return location.href='ind
           <button class="btn btn-danger" data-delete="${x.id}">Delete</button>
         </div>
       </div>
-    </article>`).join('')||'<div class="card empty-state"><p>No products yet.</p></div>';$('#notifications').innerHTML=(n.data||[]).map(x=>`<a class="card notice ${x.is_read?'':'unread'}" href="${esc(x.link||'#')}"><strong>${esc(x.title)}</strong><p class="muted">${esc(x.body)}</p></a>`).join('')||'<p class="muted">No notifications.</p>';fillProfile();renderDashboardIdentity();await sb.from('notifications').update({is_read:true}).eq('user_id',currentUser.id).eq('is_read',false)}
+    </article>`).join('')||'<div class="card empty-state"><p>No products yet.</p></div>';fillProfile();renderDashboardIdentity()}
 function fillProfile(){if(!currentProfile)return;for(const k of ['full_name','username','bio','website_url','location'])$('#profileForm').elements[k].value=currentProfile[k]||'';$('#avatarUrl').value=currentProfile.avatar_url||'';if(currentProfile.avatar_url){$('#avatarPreview').src=currentProfile.avatar_url;$('#avatarPreviewWrap').hidden=false}}
 async function saveProfile(e){e.preventDefault();const f=new FormData(e.target),file=f.get('avatar_file');let url=$('#avatarUrl').value||null;try{if(file?.size)url=await upload('avatars',file);const {error}=await sb.rpc('update_my_profile',{p_full_name:f.get('full_name'),p_username:f.get('username'),p_bio:f.get('bio'),p_avatar_url:url,p_website_url:f.get('website_url'),p_location:f.get('location')});if(error)throw error;toast('Profile updated.','success');await refreshIdentity();fillProfile();const editor=$('#creatorProfileEditor');if(editor)editor.hidden=true}catch(x){toast(x.message)}}
 function openProduct(p=null){const f=$('#productForm');f.reset();f.elements.product_id.value=p?.id||'';for(const k of ['title','creator','price','category','product_type','brand','country','product_url','description'])if(p)f.elements[k].value=p[k]||'';f.elements.tags.value=p?.tags?.join(', ')||'';f.elements.image_url.value=p?.image_url||'';$('#productModalTitle').textContent=p?'Edit product':'Publish a product';$('#saveProduct').textContent=p?'Save changes':'Publish immediately';$('#productImagePreviewWrap').hidden=!p?.image_url;if(p?.image_url)$('#productImagePreview').src=p.image_url;$('#titleCount').textContent=f.elements.title.value.length;$('#productModal').showModal()}

@@ -5,6 +5,8 @@ let creatorDirectory=[];
 let followedCreatorIds=new Set();
 let creatorMode='following';
 const READ_KEY_PREFIX='launchboard:conversation-read:';
+let pendingMessageFile=null;
+const MAX_MESSAGE_FILE_SIZE=15*1024*1024;
 
 async function loadConversations(){
   if(!currentUser){
@@ -270,6 +272,7 @@ async function loadMessages(){
 
   localStorage.setItem(READ_KEY_PREFIX+conversation.id,String(Date.now()));
   conversation.unread=false;
+  markConversationRead();
 
   $('#chatTitle').innerHTML=`<div class="messenger-chat-person">
     <span class="messenger-header-avatar">${profile.avatar_url
@@ -288,49 +291,85 @@ async function loadMessages(){
     .eq('conversation_id',active)
     .order('created_at',{ascending:true});
 
-  if(error){
-    toast(formatMessageError(error));
-    return;
+  if(error){toast(formatMessageError(error));return;}
+
+  const messageIds=(data||[]).map(message=>message.id);
+  let attachments=[];
+  if(messageIds.length){
+    const attachmentResponse=await sb.from('message_attachments')
+      .select('id,message_id,file_name,file_type,file_size,public_url,storage_path')
+      .in('message_id',messageIds);
+    if(!attachmentResponse.error)attachments=attachmentResponse.data||[];
   }
+  const attachmentsByMessage={};
+  attachments.forEach(file=>(attachmentsByMessage[file.message_id]??=[]).push(file));
 
   const container=$('#messages');
-  container.innerHTML=(data||[]).map(message=>`
-    <div class="messenger-message-row ${message.sender_id===currentUser.id?'mine':''}">
-      <div class="messenger-bubble">${esc(message.body)}</div>
+  container.innerHTML=(data||[]).map(message=>{
+    const files=attachmentsByMessage[message.id]||[];
+    return `<div class="messenger-message-row ${message.sender_id===currentUser.id?'mine':''}">
+      ${message.body&&!(files.length&&message.body==='Shared an attachment')?`<div class="messenger-bubble">${esc(message.body)}</div>`:''}
+      ${files.map(renderMessageAttachment).join('')}
       <time>${formatConversationTime(message.created_at)}</time>
-    </div>`).join('')
+    </div>`;
+  }).join('')
     ||'<div class="messenger-empty"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>';
 
   container.scrollTop=container.scrollHeight;
   renderConversationList();
 }
 
+function humanFileSize(bytes){
+  if(bytes<1024)return `${bytes} B`;
+  if(bytes<1024*1024)return `${Math.round(bytes/1024)} KB`;
+  return `${(bytes/(1024*1024)).toFixed(1)} MB`;
+}
+function renderMessageAttachment(file){
+  const url=safeUrl(file.public_url,'');
+  const isImage=String(file.file_type||'').startsWith('image/');
+  if(isImage&&url)return `<a class="message-image-attachment" href="${esc(url)}" target="_blank" rel="noopener"><img src="${esc(url)}" alt="${esc(file.file_name)}"></a>`;
+  return `<a class="message-file-attachment" href="${esc(url||'#')}" ${url?'target="_blank" rel="noopener"':''}><span>📄</span><span><strong>${esc(file.file_name)}</strong><small>${humanFileSize(Number(file.file_size)||0)}</small></span></a>`;
+}
+function chooseMessageFile(file){
+  if(!file)return;
+  if(file.size>MAX_MESSAGE_FILE_SIZE){toast('Files must be 15 MB or smaller.');return;}
+  pendingMessageFile=file;
+  const preview=$('#messageFilePreview');
+  preview.hidden=false;
+  preview.innerHTML=`<span>📎</span><span><strong>${esc(file.name)}</strong><small>${humanFileSize(file.size)}</small></span><button id="removeMessageFile" type="button" aria-label="Remove attachment">×</button>`;
+  $('#removeMessageFile').onclick=clearMessageFile;
+}
+function clearMessageFile(){
+  pendingMessageFile=null;
+  const input=$('#messageFileInput');if(input)input.value='';
+  const preview=$('#messageFilePreview');if(preview){preview.hidden=true;preview.innerHTML='';}
+}
+async function uploadMessageAttachment(messageId,file){
+  const safeName=file.name.replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-120);
+  const path=`${currentUser.id}/${active}/${messageId}-${Date.now()}-${safeName}`;
+  const {error:uploadError}=await sb.storage.from('chat-attachments').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+  if(uploadError)throw uploadError;
+  const {data:publicData}=sb.storage.from('chat-attachments').getPublicUrl(path);
+  const {error:recordError}=await sb.from('message_attachments').insert({message_id:messageId,uploader_id:currentUser.id,file_name:file.name,file_type:file.type||'application/octet-stream',file_size:file.size,storage_path:path,public_url:publicData?.publicUrl||null});
+  if(recordError)throw recordError;
+}
+async function markConversationRead(){
+  if(!active||!currentUser)return;
+  const response=await sb.from('conversation_reads').upsert({conversation_id:active,user_id:currentUser.id,last_read_at:new Date().toISOString()},{onConflict:'conversation_id,user_id'});
+  if(response.error)console.debug('Read state fallback:',response.error.message);
+  document.dispatchEvent(new CustomEvent('launchboard:messages-changed'));
+}
 async function send(event){
-  event.preventDefault();
-  if(!active)return toast('Select a conversation first.');
-
-  const form=event.target;
-  const data=new FormData(form);
-  const body=String(data.get('body')||'').trim();
-  if(!body)return;
-
-  const button=form.querySelector('button');
-  button.disabled=true;
-
+  event.preventDefault();if(!active)return toast('Select a conversation first.');
+  const form=event.target, data=new FormData(form), body=String(data.get('body')||'').trim(), file=pendingMessageFile;
+  if(!body&&!file)return;
+  const button=form.querySelector('.messenger-send-button');button.disabled=true;
   try{
-    const {error}=await sb.from('messages').insert({
-      conversation_id:active,
-      sender_id:currentUser.id,
-      body
-    });
+    const {data:message,error}=await sb.from('messages').insert({conversation_id:active,sender_id:currentUser.id,body:body||(file?'Shared an attachment':'')}).select('id').single();
     if(error)throw error;
-    form.reset();
-    await loadMessages();
-  }catch(error){
-    toast(formatMessageError(error));
-  }finally{
-    button.disabled=false;
-  }
+    if(file)await uploadMessageAttachment(message.id,file);
+    form.reset();clearMessageFile();await loadMessages();document.dispatchEvent(new CustomEvent('launchboard:messages-changed'));
+  }catch(error){toast(formatMessageError(error));}finally{button.disabled=false;}
 }
 
 async function loadCreatorDirectory(){
@@ -433,6 +472,8 @@ function setCreatorMode(mode){
 
 window.addEventListener('DOMContentLoaded',()=>{
   $('#messageForm').onsubmit=send;
+  $('#attachMessageFile')?.addEventListener('click',()=>$('#messageFileInput')?.click());
+  $('#messageFileInput')?.addEventListener('change',event=>chooseMessageFile(event.target.files?.[0]));
   $('#conversationSearch')?.addEventListener('input',renderConversationList);
   $('#openCreatorSearch')?.addEventListener('click',openCreatorSearch);
   $('#openCreatorSearchSecondary')?.addEventListener('click',openCreatorSearch);
