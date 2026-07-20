@@ -1,40 +1,14 @@
-# LaunchBoard V8.1 — Messaging and Product Notifications
+# LaunchBoard V8.1
 
-## What changed
+This is the complete LaunchBoard website based on V8, with a focused Messages-page cleanup.
 
-- Messages are now reserved for direct conversations only.
-- New chat messages no longer create Notification Center entries.
-- The Messages bottom-navigation item shows an unread conversation badge.
-- Chat supports image and document attachments up to 15 MB.
-- New products from followed creators appear in Notifications.
-- Opening a product notification goes directly to the product page.
-- Notifications were removed from the Profile/Dashboard area.
-- Notification filters are now Products, Social, and System.
-- Home section headings are left aligned and Recommended is a mobile horizontal rail.
+## Change in this release
 
-## Required database update
+- Removed the **Recent** heading above the conversation list.
+- Conversations now begin immediately below the **Following** section.
+- The conversation list remains ordered by latest activity and still shows each chat's latest-message preview and timestamp.
+- Android Back-button behavior is unchanged in this package.
 
-Run `supabase-v8.1-messaging-products.sql` once in Supabase Dashboard → SQL Editor.
+## Deployment
 
-This migration creates:
-
-- `conversation_reads`
-- `message_attachments`
-- the public `chat-attachments` Storage bucket
-- follower new-product notification trigger
-- policies for attachment and read-state access
-
-It also removes the old message-to-notification trigger and deletes legacy message notifications.
-
-## Deploy
-
-Upload all files to the GitHub Pages repository, including the SQL migration for reference. Ensure `config.js` contains the production Supabase URL and anon key. After pushing, wait for the Pages workflow to complete successfully before testing.
-
-
-## V8.1.1 mobile safety update
-
-- Removed the **Recent** heading from the Messages conversation list.
-- The conversation list remains ordered by the latest message and shows its preview inside each chat row.
-- Android system Back now closes open dialogs/chats first and returns inner pages to Home.
-- On Home, system Back is protected and does not call app exit, reducing accidental closure.
-- Android's system navigation bar itself is controlled by Android; a hosted website cannot visually hide it.
+Upload every file in this package to the root of the GitHub Pages repository, replacing the previous website files. Keep `config.js` configured with the existing Supabase project credentials.

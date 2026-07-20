@@ -1,4 +1,4 @@
-const LAUNCHBOARD_BUILD='8.1.1';
+const LAUNCHBOARD_BUILD='8.0.0';
 console.info('LaunchBoard build',LAUNCHBOARD_BUILD);
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
@@ -367,15 +367,18 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 
 /* =========================================================
-   V8.1.1 ANDROID BACK PROTECTION
-   1. Close an open dialog or chat
-   2. Return inner pages to Home
-   3. Never exit LaunchBoard from a single system Back press
+   V7.3 ANDROID BACK PRIORITY
+   1. Close open dialog/sheet
+   2. Close an open Messenger chat
+   3. Return inner pages to Home
+   4. Double Back exits from Home
    ========================================================= */
 (function(){
   function page(){
     return (location.pathname.split('/').pop()||'index.html').toLowerCase();
   }
+
+  let lastHomeBackPress=0;
 
   function closeOpenLayer(){
     const dialog=document.querySelector('dialog[open]');
@@ -386,28 +389,36 @@ window.addEventListener('DOMContentLoaded',()=>{
 
     if(window.LaunchBoardMessages?.isChatOpen?.()){
       window.LaunchBoardMessages.closeChat();
-      history.replaceState({launchboard:true},'','messages.html');
+      history.replaceState(null,'','messages.html');
       return true;
     }
 
     return false;
   }
 
-  function showProtectedHint(){
-    if(typeof toast==='function')toast('Back is protected. LaunchBoard will stay open.','success');
+  function showExitHint(){
+    if(typeof toast==='function')toast('Press Back again to exit.');
   }
 
   function handleBack(){
     if(closeOpenLayer())return;
 
-    if(page()!=='index.html'){
-      location.replace('index.html');
+    const current=page();
+    const capacitorApp=window.Capacitor?.Plugins?.App;
+
+    if(current!=='index.html'){
+      location.href='index.html';
       return;
     }
 
-    // Do not call App.exitApp(). This intentionally protects the app
-    // from accidental presses of Android's system Back button.
-    showProtectedHint();
+    const now=Date.now();
+    if(now-lastHomeBackPress<1800){
+      capacitorApp?.exitApp?.();
+      return;
+    }
+
+    lastHomeBackPress=now;
+    showExitHint();
   }
 
   function installCapacitor(){
@@ -417,7 +428,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     return true;
   }
 
-  function installBrowserGuard(){
+  function installBrowserFallback(){
     if(!matchMedia('(max-width:760px)').matches)return;
 
     history.replaceState({launchboard:true},'',location.href);
@@ -434,16 +445,19 @@ window.addEventListener('DOMContentLoaded',()=>{
         return;
       }
 
-      // Restore the guard immediately so one or repeated accidental Back
-      // presses cannot close the installed web app or browser tab.
       history.pushState({launchboardGuard:true},'',location.href);
-      showProtectedHint();
+      const now=Date.now();
+      if(now-lastHomeBackPress<1800){
+        window.close();
+      }else{
+        lastHomeBackPress=now;
+        showExitHint();
+      }
     });
   }
 
   function start(){
-    installCapacitor();
-    installBrowserGuard();
+    if(!installCapacitor())installBrowserFallback();
   }
 
   if(document.readyState==='loading'){
@@ -457,15 +471,11 @@ window.addEventListener('DOMContentLoaded',()=>{
 async function refreshMobileNotificationBadge(){
   if(!currentUser||!sb)return;
 
-  let {count,error}=await sb
+  const {count,error}=await sb
     .from('notifications')
     .select('id',{count:'exact',head:true})
     .eq('user_id',currentUser.id)
-    .eq('is_read',false)
-    .neq('type','message');
-  if(error&&String(error.message||'').includes('type')){
-    ({count,error}=await sb.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id).eq('is_read',false));
-  }
+    .eq('is_read',false);
 
   if(error){
     console.warn('Notification badge failed:',error);
@@ -492,30 +502,3 @@ async function refreshMobileNotificationBadge(){
 document.addEventListener('launchboard:auth-ready',refreshMobileNotificationBadge);
 document.addEventListener('launchboard:notifications-changed',refreshMobileNotificationBadge);
 
-
-/* V8.1 message-only inbox unread badge */
-async function refreshMobileMessageBadge(){
-  if(!currentUser||!sb)return;
-  try{
-    const {data:members,error:memberError}=await sb.from('conversation_members').select('conversation_id').eq('user_id',currentUser.id);
-    if(memberError)throw memberError;
-    const ids=[...new Set((members||[]).map(x=>x.conversation_id).filter(Boolean))];
-    let count=0;
-    if(ids.length){
-      const [{data:messages,error:messageError},{data:reads,error:readError}]=await Promise.all([
-        sb.from('messages').select('conversation_id,sender_id,created_at').in('conversation_id',ids).neq('sender_id',currentUser.id).order('created_at',{ascending:false}),
-        sb.from('conversation_reads').select('conversation_id,last_read_at').eq('user_id',currentUser.id).in('conversation_id',ids)
-      ]);
-      if(messageError)throw messageError;
-      const readMap=Object.fromEntries((readError?[]:(reads||[])).map(x=>[x.conversation_id,new Date(x.last_read_at).getTime()]));
-      const latest={};
-      (messages||[]).forEach(x=>{if(!latest[x.conversation_id])latest[x.conversation_id]=x;});
-      count=Object.values(latest).filter(x=>new Date(x.created_at).getTime()>(readMap[x.conversation_id]||Number(localStorage.getItem('launchboard:conversation-read:'+x.conversation_id)||0))).length;
-    }
-    const link=document.querySelector('[data-mobile-destination="message"]');if(!link)return;
-    let badge=link.querySelector('.mobile-nav-badge');
-    if(count>0){if(!badge){badge=document.createElement('span');badge.className='mobile-nav-badge';link.appendChild(badge);}badge.textContent=count>99?'99+':String(count);}else badge?.remove();
-  }catch(error){console.debug('Message badge unavailable:',error?.message||error);}
-}
-document.addEventListener('launchboard:auth-ready',refreshMobileMessageBadge);
-document.addEventListener('launchboard:messages-changed',refreshMobileMessageBadge);
