@@ -123,7 +123,41 @@ async function shareProduct(){
 
 async function toggleLike(){if(!currentUser)return $('#loginModal').showModal();if(liked)await sb.from('product_likes').delete().eq('user_id',currentUser.id).eq('product_id',id);else await sb.from('product_likes').insert({user_id:currentUser.id,product_id:id});liked=!liked;loadProduct()}
 async function review(e){e.preventDefault();const f=new FormData(e.target);const {error}=await sb.from('product_reviews').upsert({product_id:id,author_id:currentUser.id,rating:+f.get('rating'),body:f.get('body')},{onConflict:'product_id,author_id'});if(error)return toast(error.message);loadProduct()}
-async function startChat(){if(!currentUser)return $('#loginModal').showModal();const {data,error}=await sb.rpc('start_conversation',{target_user:owner.id,target_product:id});if(error)return toast(error.message);location.href=`messages.html?conversation=${data}`}
+async function startChat(){
+  if(!currentUser)return $('#loginModal').showModal();
+  if(!owner?.id)return toast('Creator information is unavailable.');
+  if(currentUser.id===owner.id)return toast('This is your own product.');
+
+  const buttons=[$('#messageBtn'),$('#stickyMessageButton')].filter(Boolean);
+  buttons.forEach(button=>button.disabled=true);
+
+  try{
+    const {data,error}=await sb.rpc('start_conversation',{
+      target_user:owner.id,
+      target_product:id
+    });
+    if(error)throw error;
+
+    const conversationId=typeof data==='string'
+      ? data
+      : Array.isArray(data)
+        ? (data[0]?.start_conversation||data[0]?.conversation_id||data[0]?.id||data[0])
+        : (data?.start_conversation||data?.conversation_id||data?.id||data);
+
+    if(!conversationId)throw new Error('The conversation could not be opened.');
+
+    const params=new URLSearchParams({
+      conversation:String(conversationId),
+      creator:String(owner.id),
+      product:String(id),
+      source:'product'
+    });
+    location.href=`messages.html?${params.toString()}`;
+  }catch(error){
+    toast(error?.message||'Unable to message this creator.');
+    buttons.forEach(button=>button.disabled=false);
+  }
+}
 window.addEventListener('DOMContentLoaded',()=>{document.addEventListener('launchboard:auth-ready',loadProduct,{once:true});if(authReady)loadProduct()});
 
 window.addEventListener('DOMContentLoaded',()=>{

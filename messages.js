@@ -115,8 +115,13 @@ async function loadConversations(){
 
     renderConversationList();
 
-    if(active)await loadMessages();
-    else renderEmptyChat();
+    if(active){
+      await loadMessages();
+      openMobileChat();
+      requestAnimationFrame(()=>$('#messageForm input[name="body"]')?.focus());
+    }else{
+      renderEmptyChat();
+    }
   }catch(error){
     console.error('Unable to load conversations:',error);
     toast(formatMessageError(error));

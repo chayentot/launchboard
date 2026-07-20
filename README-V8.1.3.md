@@ -1,4 +1,4 @@
-# LaunchBoard V8.1.3
+# LaunchBoard V8.1.4
 
 ## Product conversation reference
 
@@ -12,4 +12,4 @@ The card includes:
 - creator name when available
 - a direct **View product** link
 
-No database migration is required for this update because the existing `conversations.product_id` relationship is used. Upload all files together so the cache-busted V8.1.3 assets are published.
+No database migration is required for this update because the existing `conversations.product_id` relationship is used. Upload all files together so the cache-busted V8.1.4 assets are published.
