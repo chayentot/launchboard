@@ -268,8 +268,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   function navItems(){
     return [
       ['index.html','⌂','Home'],
+      ['messages.html','✉','Message'],
       ['dashboard.html?publish=1','＋','Sell'],
-      ['messages.html','✉','Messages'],
+      ['notifications.html','♢','Notification'],
       ['dashboard.html','◎','Profile']
     ];
   }
@@ -291,7 +292,11 @@ window.addEventListener('DOMContentLoaded',()=>{
     const current=page();
     const active=current==='dashboard.html'
       ? (new URLSearchParams(location.search).get('publish')==='1'?'sell':'profile')
-      : current==='messages.html'?'messages':'home';
+      : current==='messages.html'
+        ? 'message'
+        : current==='notifications.html'
+          ? 'notification'
+          : 'home';
 
     nav.querySelector(`[data-mobile-destination="${active}"]`)?.classList.add('active');
   }
@@ -455,4 +460,39 @@ window.addEventListener('DOMContentLoaded',()=>{
     start();
   }
 })();
+
+
+async function refreshMobileNotificationBadge(){
+  if(!currentUser||!sb)return;
+
+  const {count,error}=await sb
+    .from('notifications')
+    .select('id',{count:'exact',head:true})
+    .eq('user_id',currentUser.id)
+    .eq('is_read',false);
+
+  if(error){
+    console.warn('Notification badge failed:',error);
+    return;
+  }
+
+  const link=document.querySelector('[data-mobile-destination="notification"]');
+  if(!link)return;
+
+  let badge=link.querySelector('.mobile-nav-badge');
+
+  if((count||0)>0){
+    if(!badge){
+      badge=document.createElement('span');
+      badge.className='mobile-nav-badge';
+      link.appendChild(badge);
+    }
+    badge.textContent=count>99?'99+':String(count);
+  }else{
+    badge?.remove();
+  }
+}
+
+document.addEventListener('launchboard:auth-ready',refreshMobileNotificationBadge);
+document.addEventListener('launchboard:notifications-changed',refreshMobileNotificationBadge);
 

@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notifications · LaunchBoard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script defer src="common.js"></script>
+  <script defer src="notifications.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="index.html">Launch<span>Board</span></a>
+    <div class="actions" id="navActions"></div>
+  </div>
+</header>
+
+<main class="page notifications-page">
+  <div class="container notifications-container">
+    <section class="notifications-shell">
+      <header class="notifications-header">
+        <div>
+          <span class="eyebrow">Activity center</span>
+          <h1>Notifications</h1>
+        </div>
+        <button class="notifications-read-all" id="markAllNotificationsRead" type="button">
+          Mark all read
+        </button>
+      </header>
+
+      <div class="notifications-tabs" role="tablist" aria-label="Notification filters">
+        <button class="active" id="allNotificationsTab" type="button">All</button>
+        <button id="unreadNotificationsTab" type="button">
+          Unread <span id="notificationUnreadCount">0</span>
+        </button>
+      </div>
+
+      <div class="notifications-list" id="notificationsList">
+        <div class="notifications-loading">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+  <a href="index.html"><span>⌂</span><small>Home</small></a>
+  <a href="messages.html"><span>✉</span><small>Message</small></a>
+  <a href="dashboard.html?publish=1"><span>＋</span><small>Sell</small></a>
+  <a href="notifications.html" class="active"><span>♢</span><small>Notification</small></a>
+  <a href="dashboard.html"><span>◎</span><small>Profile</small></a>
+</nav>
+
+<div class="toast" id="toast"></div>
+</body>
+</html>
