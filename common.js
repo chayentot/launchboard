@@ -1,4 +1,4 @@
-const LAUNCHBOARD_BUILD='8.0.0';
+const LAUNCHBOARD_BUILD='8.1.1';
 console.info('LaunchBoard build',LAUNCHBOARD_BUILD);
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
@@ -367,18 +367,15 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 
 /* =========================================================
-   V7.3 ANDROID BACK PRIORITY
-   1. Close open dialog/sheet
-   2. Close an open Messenger chat
-   3. Return inner pages to Home
-   4. Double Back exits from Home
+   V8.1.1 ANDROID BACK PROTECTION
+   1. Close an open dialog or chat
+   2. Return inner pages to Home
+   3. Never exit LaunchBoard from a single system Back press
    ========================================================= */
 (function(){
   function page(){
     return (location.pathname.split('/').pop()||'index.html').toLowerCase();
   }
-
-  let lastHomeBackPress=0;
 
   function closeOpenLayer(){
     const dialog=document.querySelector('dialog[open]');
@@ -389,36 +386,28 @@ window.addEventListener('DOMContentLoaded',()=>{
 
     if(window.LaunchBoardMessages?.isChatOpen?.()){
       window.LaunchBoardMessages.closeChat();
-      history.replaceState(null,'','messages.html');
+      history.replaceState({launchboard:true},'','messages.html');
       return true;
     }
 
     return false;
   }
 
-  function showExitHint(){
-    if(typeof toast==='function')toast('Press Back again to exit.');
+  function showProtectedHint(){
+    if(typeof toast==='function')toast('Back is protected. LaunchBoard will stay open.','success');
   }
 
   function handleBack(){
     if(closeOpenLayer())return;
 
-    const current=page();
-    const capacitorApp=window.Capacitor?.Plugins?.App;
-
-    if(current!=='index.html'){
-      location.href='index.html';
+    if(page()!=='index.html'){
+      location.replace('index.html');
       return;
     }
 
-    const now=Date.now();
-    if(now-lastHomeBackPress<1800){
-      capacitorApp?.exitApp?.();
-      return;
-    }
-
-    lastHomeBackPress=now;
-    showExitHint();
+    // Do not call App.exitApp(). This intentionally protects the app
+    // from accidental presses of Android's system Back button.
+    showProtectedHint();
   }
 
   function installCapacitor(){
@@ -428,7 +417,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     return true;
   }
 
-  function installBrowserFallback(){
+  function installBrowserGuard(){
     if(!matchMedia('(max-width:760px)').matches)return;
 
     history.replaceState({launchboard:true},'',location.href);
@@ -445,19 +434,16 @@ window.addEventListener('DOMContentLoaded',()=>{
         return;
       }
 
+      // Restore the guard immediately so one or repeated accidental Back
+      // presses cannot close the installed web app or browser tab.
       history.pushState({launchboardGuard:true},'',location.href);
-      const now=Date.now();
-      if(now-lastHomeBackPress<1800){
-        window.close();
-      }else{
-        lastHomeBackPress=now;
-        showExitHint();
-      }
+      showProtectedHint();
     });
   }
 
   function start(){
-    if(!installCapacitor())installBrowserFallback();
+    installCapacitor();
+    installBrowserGuard();
   }
 
   if(document.readyState==='loading'){

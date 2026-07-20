@@ -29,3 +29,12 @@ It also removes the old message-to-notification trigger and deletes legacy messa
 ## Deploy
 
 Upload all files to the GitHub Pages repository, including the SQL migration for reference. Ensure `config.js` contains the production Supabase URL and anon key. After pushing, wait for the Pages workflow to complete successfully before testing.
+
+
+## V8.1.1 mobile safety update
+
+- Removed the **Recent** heading from the Messages conversation list.
+- The conversation list remains ordered by the latest message and shows its preview inside each chat row.
+- Android system Back now closes open dialogs/chats first and returns inner pages to Home.
+- On Home, system Back is protected and does not call app exit, reducing accidental closure.
+- Android's system navigation bar itself is controlled by Android; a hosted website cannot visually hide it.
