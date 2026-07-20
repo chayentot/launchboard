@@ -4504,24 +4504,14 @@ dialog.modal > .pad {
 }
 
 
-/* LaunchBoard V8.1.4: product-to-chat routing and mobile action cleanup */
+/* LaunchBoard V8.1.5: keep the compact mobile action bar with Message + Visit product. */
 @media (max-width:760px) {
   .page-product .product-image-actions {
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 
-  .page-product .product-visit-action,
-  .page-product #stickyVisitButton {
+  /* Avoid a duplicate link below the image; the sticky Visit product action remains visible. */
+  .page-product .product-visit-action {
     display: none !important;
-  }
-
-  .page-product .v8-sticky-product-actions {
-    grid-template-columns: 1fr !important;
-  }
-
-  .page-product #stickyMessageButton {
-    width: 100%;
-    background: var(--brand);
-    color: #fff;
   }
 }
