@@ -1,3 +1,5 @@
+const LAUNCHBOARD_BUILD='7.4.1-full';
+console.info('LaunchBoard build',LAUNCHBOARD_BUILD);
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
 
@@ -276,6 +278,10 @@ window.addEventListener('DOMContentLoaded',()=>{
   }
 
   function installBottomNavigation(){
+    document.querySelectorAll('.mobile-bottom-nav').forEach((existing,index)=>{
+      if(index>0)existing.remove();
+    });
+
     let nav=document.querySelector('.mobile-bottom-nav');
 
     if(!nav){

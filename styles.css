@@ -3902,3 +3902,62 @@ dialog.modal > .pad {
     font-size: .61rem;
   }
 }
+
+
+/* =========================================================
+   V7.4.1 FULL REFRESH — DEFINITIVE FIVE-ITEM MOBILE NAV
+   ========================================================= */
+@media (max-width:760px) {
+  body {
+    padding-bottom: calc(66px + env(safe-area-inset-bottom)) !important;
+  }
+
+  body > nav.mobile-bottom-nav,
+  .mobile-bottom-nav {
+    position: fixed !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 9999 !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    height: calc(64px + env(safe-area-inset-bottom)) !important;
+    padding: 4px 2px env(safe-area-inset-bottom) !important;
+    border-top: 1px solid #e5e6ee !important;
+    background: rgba(255,255,255,.98) !important;
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-bottom-nav a {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    gap: 1px !important;
+    color: #777b8f !important;
+    text-align: center !important;
+  }
+
+  .mobile-bottom-nav a.active {
+    color: var(--brand) !important;
+  }
+
+  .mobile-bottom-nav a > span:first-child {
+    font-size: .92rem !important;
+    line-height: 1 !important;
+  }
+
+  .mobile-bottom-nav small {
+    display: block !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    font-size: .48rem !important;
+    font-weight: 800 !important;
+    line-height: 1.05 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
