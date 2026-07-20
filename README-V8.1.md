@@ -12,3 +12,10 @@ This is the complete LaunchBoard website based on V8, with a focused Messages-pa
 ## Deployment
 
 Upload every file in this package to the root of the GitHub Pages repository, replacing the previous website files. Keep `config.js` configured with the existing Supabase project credentials.
+
+
+## V8.1.2 correction
+- Removed the duplicate Notifications panel from the Profile/Dashboard page.
+- Kept notifications exclusively in the dedicated Notification navigation tab.
+- Left-aligned the New Today heading while keeping See all on the right.
+- Added cache-busted asset versions so the corrected UI is loaded after deployment.

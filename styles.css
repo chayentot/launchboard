@@ -4369,3 +4369,35 @@ dialog.modal > .pad {
 .messenger-following-strip + .messenger-inbox-section {
   padding-top: 2px;
 }
+
+
+/* V8.1.2 profile and New Today corrections */
+.new-today-heading {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+.new-today-heading .section-title-left {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+.new-today-heading h2,
+.new-today-heading .eyebrow {
+  text-align: left !important;
+}
+.new-today-heading .text-button {
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+  white-space: nowrap !important;
+}
+@media (max-width: 760px) {
+  #newToday .new-today-heading {
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 10px !important;
+  }
+}
