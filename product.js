@@ -4,105 +4,79 @@ function renderProduct(likes,reviews){
   const avg=reviews.length
     ? (reviews.reduce((sum,item)=>sum+item.rating,0)/reviews.length).toFixed(1)
     : 'No ratings';
+  const imageMarkup=product.image_url
+    ? `<img src="${esc(safeUrl(product.image_url,''))}" alt="${esc(product.title)}">`
+    : '<div class="image-placeholder">No image available</div>';
+  const creatorAvatar=owner.avatar_url
+    ? `<img src="${esc(safeUrl(owner.avatar_url,''))}" alt="${esc(owner.full_name||'Creator')}">`
+    : esc((owner.full_name||product.creator||'?').slice(0,1).toUpperCase());
 
   $('#productPage').innerHTML=`
-    <div class="product-page-header card pad v8-product-header">
-      <span class="eyebrow">${esc(product.category||'Product')}</span>
-      <h1>${esc(product.title)}</h1>
-      <div class="product-page-price">${esc(formatPeso(product.price))}</div>
-      <p class="muted">${esc(product.brand||product.product_type||'Product')}</p>
-    </div>
-
-    <div class="two-col product-detail-grid">
-      <section>
-        <div class="card detail-media">
-          ${product.image_url
-            ? `<img src="${esc(safeUrl(product.image_url,''))}" alt="${esc(product.title)}">`
-            : '<div class="image-placeholder">No image available</div>'}
+    <section class="desktop-product-hero card">
+      <div class="desktop-product-gallery">
+        <div class="desktop-product-image">${imageMarkup}</div>
+      </div>
+      <div class="desktop-product-info">
+        <div class="desktop-breadcrumb"><a href="index.html">Marketplace</a><span>›</span><span>${esc(product.category||'Product')}</span></div>
+        <span class="eyebrow">${esc(product.category||'Product')}</span>
+        <h1>${esc(product.title)}</h1>
+        <div class="desktop-product-price">${esc(formatPeso(product.price))}</div>
+        <p class="muted desktop-product-brand">${esc(product.brand||product.product_type||'Product')}</p>
+        <div class="desktop-product-signals"><span>♡ ${likes.length} likes</span><span>★ ${avg}</span><span>${reviews.length} reviews</span></div>
+        <a class="desktop-creator-card" href="creator.html?id=${encodeURIComponent(owner.id)}">
+          <span class="desktop-creator-avatar">${creatorAvatar}</span>
+          <span><strong>${esc(owner.full_name||product.creator||'Creator')} ${badge(owner)}</strong><small>${esc(owner.bio||'Independent creator')}</small></span>
+        </a>
+        <div class="desktop-product-actions">
+          <button class="btn btn-primary" id="desktopMessageButton" type="button">Message creator</button>
+          <a class="btn btn-ghost" id="desktopVisitButton" href="${safeUrl(product.product_url)}" target="_blank" rel="noopener">Visit product ↗</a>
         </div>
+        <div class="desktop-secondary-actions">
+          <button class="product-heart-action ${liked?'is-liked':''}" id="desktopLikeButton" type="button"><span>${liked?'♥':'♡'}</span><span>${liked?'Liked':'Like'}</span><strong>${likes.length}</strong></button>
+          <button class="v8-share-action" id="desktopShareButton" type="button">Share</button>
+        </div>
+      </div>
+    </section>
 
+    <div class="product-mobile-only">
+      <div class="product-page-header card pad v8-product-header">
+        <span class="eyebrow">${esc(product.category||'Product')}</span>
+        <h1>${esc(product.title)}</h1>
+        <div class="product-page-price">${esc(formatPeso(product.price))}</div>
+        <p class="muted">${esc(product.brand||product.product_type||'Product')}</p>
+      </div>
+      <div class="two-col product-detail-grid"><section>
+        <div class="card detail-media">${imageMarkup}</div>
         <div class="product-image-actions">
-          <button class="product-heart-action ${liked?'is-liked':''}" id="likeBtn" type="button">
-            <span>${liked?'♥':'♡'}</span>
-            <span>${liked?'Liked':'Like'}</span>
-            <strong>${likes.length}</strong>
-          </button>
+          <button class="product-heart-action ${liked?'is-liked':''}" id="likeBtn" type="button"><span>${liked?'♥':'♡'}</span><span>${liked?'Liked':'Like'}</span><strong>${likes.length}</strong></button>
           <button class="v8-share-action" id="shareProduct" type="button">Share</button>
-          <a class="product-visit-action" id="visitBtn" href="${safeUrl(product.product_url)}" target="_blank" rel="noopener">
-            Visit product ↗
-          </a>
+          <a class="product-visit-action" id="visitBtn" href="${safeUrl(product.product_url)}" target="_blank" rel="noopener">Visit product ↗</a>
         </div>
-
         <article class="card pad v8-creator-mini">
-          <a class="v8-creator-mini-profile" href="creator.html?id=${encodeURIComponent(owner.id)}">
-            <span class="v8-creator-mini-avatar">
-              ${owner.avatar_url
-                ? `<img src="${esc(safeUrl(owner.avatar_url,''))}" alt="${esc(owner.full_name||'Creator')}">`
-                : esc((owner.full_name||product.creator||'?').slice(0,1).toUpperCase())}
-            </span>
-            <span>
-              <strong>${esc(owner.full_name||product.creator||'Creator')} ${badge(owner)}</strong>
-              <small>${esc(owner.bio||'Independent creator')}</small>
-            </span>
-          </a>
+          <a class="v8-creator-mini-profile" href="creator.html?id=${encodeURIComponent(owner.id)}"><span class="v8-creator-mini-avatar">${creatorAvatar}</span><span><strong>${esc(owner.full_name||product.creator||'Creator')} ${badge(owner)}</strong><small>${esc(owner.bio||'Independent creator')}</small></span></a>
           <button class="btn btn-soft" id="messageBtn" type="button">Message</button>
         </article>
-
-        <div class="card pad v8-about-product">
-          <h2>About this product</h2>
-          <p>${esc(product.description||'No description provided.')}</p>
-          <div class="chips">${(product.tags||[]).map(tag=>`<span class="chip">#${esc(tag)}</span>`).join('')}</div>
-        </div>
-
-        <div class="card pad v8-reviews">
-          <div class="section-head">
-            <h2>Reviews</h2>
-            <strong>${avg} · ${reviews.length}</strong>
-          </div>
-          ${currentUser&&currentUser.id!==product.owner_id?`
-            <form id="reviewForm" class="form-grid">
-              <select class="field" name="rating">
-                <option value="5">5 stars</option>
-                <option value="4">4 stars</option>
-                <option value="3">3 stars</option>
-                <option value="2">2 stars</option>
-                <option value="1">1 star</option>
-              </select>
-              <input class="field" name="body" minlength="3" maxlength="600" placeholder="Share your experience" required>
-              <button class="btn btn-primary full">Post review</button>
-            </form>`:''}
-          <div>${reviews.map(item=>`
-            <article class="review">
-              <strong>${esc(item.profiles?.full_name||'Member')} ${badge(item.profiles)}</strong>
-              <div class="stars">${'★'.repeat(item.rating)}${'☆'.repeat(5-item.rating)}</div>
-              <p>${esc(item.body)}</p>
-            </article>`).join('')||'<p class="muted">No reviews yet.</p>'}</div>
-        </div>
-
-        <section class="product-related-section">
-          <div class="section-heading">
-            <div><span class="eyebrow">More to explore</span><h2>Related products</h2></div>
-          </div>
-          <div class="product-grid" id="relatedProducts"></div>
-        </section>
-      </section>
+      </section></div>
     </div>
 
-    <div class="v8-sticky-product-actions">
-      <button id="stickyMessageButton" type="button">Message</button>
-      <a id="stickyVisitButton" href="${safeUrl(product.product_url)}" target="_blank" rel="noopener">Visit product</a>
-    </div>`;
+    <div class="product-below-fold">
+      <div class="card pad v8-about-product"><h2>About this product</h2><p>${esc(product.description||'No description provided.')}</p><div class="chips">${(product.tags||[]).map(tag=>`<span class="chip">#${esc(tag)}</span>`).join('')}</div></div>
+      <div class="card pad v8-reviews"><div class="section-head"><h2>Reviews</h2><strong>${avg} · ${reviews.length}</strong></div>
+        ${currentUser&&currentUser.id!==product.owner_id?`<form id="reviewForm" class="form-grid"><select class="field" name="rating"><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select><input class="field" name="body" minlength="3" maxlength="600" placeholder="Share your experience" required><button class="btn btn-primary full">Post review</button></form>`:''}
+        <div>${reviews.map(item=>`<article class="review"><strong>${esc(item.profiles?.full_name||'Member')} ${badge(item.profiles)}</strong><div class="stars">${'★'.repeat(item.rating)}${'☆'.repeat(5-item.rating)}</div><p>${esc(item.body)}</p></article>`).join('')||'<p class="muted">No reviews yet.</p>'}</div>
+      </div>
+      <section class="product-related-section"><div class="section-heading"><div><span class="eyebrow">More to explore</span><h2>Related products</h2></div></div><div class="product-grid" id="relatedProducts"></div></section>
+    </div>
 
-  $('#likeBtn').onclick=toggleLike;
-  $('#visitBtn').onclick=()=>sb.rpc('increment_product_clicks',{product_id:id});
-  $('#messageBtn').onclick=startChat;
-  $('#stickyMessageButton').onclick=startChat;
-  $('#stickyVisitButton').onclick=()=>sb.rpc('increment_product_clicks',{product_id:id});
-  $('#shareProduct').onclick=shareProduct;
+    <div class="v8-sticky-product-actions"><button id="stickyMessageButton" type="button">Message</button><a id="stickyVisitButton" href="${safeUrl(product.product_url)}" target="_blank" rel="noopener">Visit product</a></div>`;
+
+  ['likeBtn','desktopLikeButton'].forEach(key=>{ const el=$('#'+key); if(el)el.onclick=toggleLike; });
+  ['visitBtn','stickyVisitButton','desktopVisitButton'].forEach(key=>{ const el=$('#'+key); if(el)el.onclick=()=>sb.rpc('increment_product_clicks',{product_id:id}); });
+  ['messageBtn','stickyMessageButton','desktopMessageButton'].forEach(key=>{ const el=$('#'+key); if(el)el.onclick=startChat; });
+  ['shareProduct','desktopShareButton'].forEach(key=>{ const el=$('#'+key); if(el)el.onclick=shareProduct; });
   $('#reviewForm')?.addEventListener('submit',review);
   renderRelatedProducts();
 }
-
 async function shareProduct(){
   const shareData={
     title:product.title,
@@ -128,7 +102,7 @@ async function startChat(){
   if(!owner?.id)return toast('Creator information is unavailable.');
   if(currentUser.id===owner.id)return toast('This is your own product.');
 
-  const buttons=[$('#messageBtn'),$('#stickyMessageButton')].filter(Boolean);
+  const buttons=[$('#messageBtn'),$('#stickyMessageButton'),$('#desktopMessageButton')].filter(Boolean);
   buttons.forEach(button=>button.disabled=true);
 
   try{
