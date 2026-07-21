@@ -137,3 +137,9 @@
 
   .page-dashboard .creator-profile-editor{margin:14px 0}
 }
+
+/* LaunchBoard V8.3.2 — mobile profile-first hierarchy. */
+@media (max-width:767px){
+  .dashboard-mobile-live>.dashboard-mobile-profile-card{margin:0 0 14px}
+  .dashboard-mobile-live>.mobile-dashboard-welcome{margin-top:0}
+}
