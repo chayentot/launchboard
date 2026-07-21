@@ -4,6 +4,9 @@ let memberProfiles={};
 let creatorDirectory=[];
 let followedCreatorIds=new Set();
 let creatorMode='following';
+let pendingAttachment=null;
+const MESSAGE_ATTACHMENTS_BUCKET='message-attachments';
+const MAX_MESSAGE_ATTACHMENT_BYTES=15*1024*1024;
 const READ_KEY_PREFIX='launchboard:conversation-read:';
 
 async function loadConversations(){
@@ -63,7 +66,7 @@ async function loadConversations(){
         : Promise.resolve({data:[],error:null}),
       conversationIds.length
         ? sb.from('messages')
-            .select('id,conversation_id,sender_id,body,created_at')
+            .select('id,conversation_id,sender_id,body,attachment_url,attachment_name,attachment_type,attachment_size,created_at')
             .in('conversation_id',conversationIds)
             .order('created_at',{ascending:false})
         : Promise.resolve({data:[],error:null})
@@ -283,6 +286,66 @@ function renderProductReference(product){
   </article>`;
 }
 
+function humanFileSize(bytes){
+  const value=Number(bytes||0);
+  if(!value)return '';
+  if(value<1024)return `${value} B`;
+  if(value<1024*1024)return `${(value/1024).toFixed(1)} KB`;
+  return `${(value/(1024*1024)).toFixed(1)} MB`;
+}
+
+function renderMessageAttachment(message){
+  if(!message.attachment_url)return '';
+  const url=esc(safeUrl(message.attachment_url,''));
+  const name=esc(message.attachment_name||'Attachment');
+  const type=String(message.attachment_type||'');
+  if(type.startsWith('image/')){
+    return `<a class="messenger-image-attachment" href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="${name}"></a>`;
+  }
+  return `<a class="messenger-file-attachment" href="${url}" target="_blank" rel="noopener">
+    <span>📄</span><span><strong>${name}</strong><small>${humanFileSize(message.attachment_size)}</small></span><span>Download</span>
+  </a>`;
+}
+
+function sanitizeAttachmentName(name){
+  return String(name||'file').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(-100)||'file';
+}
+
+function showAttachmentPreview(file){
+  const target=$('#messageAttachmentPreview');
+  if(!target)return;
+  if(!file){target.hidden=true;target.innerHTML='';return;}
+  const isImage=file.type.startsWith('image/');
+  target.hidden=false;
+  target.innerHTML=`<div class="messenger-pending-attachment">
+    ${isImage?`<img src="${URL.createObjectURL(file)}" alt="">`:'<span class="messenger-pending-file-icon">📄</span>'}
+    <span><strong>${esc(file.name)}</strong><small>${humanFileSize(file.size)}</small></span>
+    <button id="removePendingAttachment" type="button" aria-label="Remove attachment">×</button>
+  </div>`;
+  $('#removePendingAttachment').onclick=()=>{pendingAttachment=null;$('#messageAttachmentInput').value='';showAttachmentPreview(null);};
+}
+
+function chooseAttachment(accept){
+  if(!active)return toast('Open a conversation before attaching a file.');
+  const input=$('#messageAttachmentInput');
+  input.accept=accept||'';
+  input.click();
+  $('#messageAttachmentModal')?.close?.();
+}
+
+async function uploadMessageAttachment(file){
+  if(!file)return null;
+  if(file.size>MAX_MESSAGE_ATTACHMENT_BYTES)throw new Error('Attachments must be 15 MB or smaller.');
+  const allowed=['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','text/plain'];
+  if(!allowed.includes(file.type))throw new Error('This file type is not supported.');
+  const path=`${currentUser.id}/${active}/${Date.now()}-${sanitizeAttachmentName(file.name)}`;
+  const {error}=await sb.storage.from(MESSAGE_ATTACHMENTS_BUCKET).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+  if(error)throw error;
+  const {data}=sb.storage.from(MESSAGE_ATTACHMENTS_BUCKET).getPublicUrl(path);
+  if(!data?.publicUrl)throw new Error('The attachment URL could not be created.');
+  return {url:data.publicUrl,name:file.name,type:file.type,size:file.size};
+}
+
 async function loadMessages(){
   const conversation=conversations.find(item=>item.id===active);
   if(!conversation){
@@ -307,7 +370,7 @@ async function loadMessages(){
   </div>`;
 
   const {data,error}=await sb.from('messages')
-    .select('id,conversation_id,sender_id,body,created_at')
+    .select('id,conversation_id,sender_id,body,attachment_url,attachment_name,attachment_type,attachment_size,created_at')
     .eq('conversation_id',active)
     .order('created_at',{ascending:true});
 
@@ -318,11 +381,14 @@ async function loadMessages(){
 
   const container=$('#messages');
   const productReference=conversation.product?renderProductReference(conversation.product):'';
-  const messageHistory=(data||[]).map(message=>`
-    <div class="messenger-message-row ${message.sender_id===currentUser.id?'mine':''}">
-      <div class="messenger-bubble">${esc(message.body)}</div>
+  const messageHistory=(data||[]).map(message=>{
+    const attachment=renderMessageAttachment(message);
+    const body=message.body?`<div class="messenger-message-text">${esc(message.body)}</div>`:'';
+    return `<div class="messenger-message-row ${message.sender_id===currentUser.id?'mine':''}">
+      <div class="messenger-bubble ${attachment?'has-attachment':''}">${attachment}${body}</div>
       <time>${formatConversationTime(message.created_at)}</time>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   container.innerHTML=productReference+(messageHistory
     ||'<div class="messenger-empty compact"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>');
@@ -338,21 +404,35 @@ async function send(event){
   const form=event.target;
   const data=new FormData(form);
   const body=String(data.get('body')||'').trim();
-  if(!body)return;
+  if(!body&&!pendingAttachment)return;
 
-  const button=form.querySelector('button');
+  const button=form.querySelector('.messenger-send-button');
   button.disabled=true;
 
   try{
-    const {error}=await sb.from('messages').insert({
+    const attachment=await uploadMessageAttachment(pendingAttachment);
+    const payload={
       conversation_id:active,
       sender_id:currentUser.id,
-      body
-    });
+      body:body||(attachment?`Attached ${attachment.name}`:'')
+    };
+    if(attachment){
+      Object.assign(payload,{
+        attachment_url:attachment.url,
+        attachment_name:attachment.name,
+        attachment_type:attachment.type,
+        attachment_size:attachment.size
+      });
+    }
+    const {error}=await sb.from('messages').insert(payload);
     if(error)throw error;
     form.reset();
+    pendingAttachment=null;
+    $('#messageAttachmentInput').value='';
+    showAttachmentPreview(null);
     await loadMessages();
   }catch(error){
+    console.error('Message send failed:',error);
     toast(formatMessageError(error));
   }finally{
     button.disabled=false;
@@ -459,6 +539,18 @@ function setCreatorMode(mode){
 
 window.addEventListener('DOMContentLoaded',()=>{
   $('#messageForm').onsubmit=send;
+  $('#openAttachmentMenu')?.addEventListener('click',()=>{
+    if(!active)return toast('Open a conversation before attaching a file.');
+    $('#messageAttachmentModal')?.showModal?.();
+  });
+  $('#closeAttachmentMenu')?.addEventListener('click',()=>$('#messageAttachmentModal')?.close?.());
+  $$('[data-attachment-accept]').forEach(button=>button.addEventListener('click',()=>chooseAttachment(button.dataset.attachmentAccept)));
+  $('#messageAttachmentInput')?.addEventListener('change',event=>{
+    const file=event.target.files?.[0]||null;
+    if(file&&file.size>MAX_MESSAGE_ATTACHMENT_BYTES){event.target.value='';return toast('Attachments must be 15 MB or smaller.');}
+    pendingAttachment=file;
+    showAttachmentPreview(file);
+  });
   $('#conversationSearch')?.addEventListener('input',renderConversationList);
   $('#openCreatorSearch')?.addEventListener('click',openCreatorSearch);
   $('#openCreatorSearchSecondary')?.addEventListener('click',openCreatorSearch);

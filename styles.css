@@ -4650,3 +4650,36 @@ dialog.modal > .pad {
   .page-product .desktop-product-info h1{font-size:2rem}
   .page-product .product-below-fold{grid-template-columns:minmax(0,1fr) 290px}
 }
+
+
+/* =========================================================
+   V8.1.8 REVIEWS + MESSAGE ATTACHMENTS
+   ========================================================= */
+.messenger-attachment-modal{width:min(430px,calc(100vw - 24px))}
+.messenger-attachment-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.messenger-attachment-options button{display:grid;justify-items:start;gap:5px;padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff;text-align:left;cursor:pointer}
+.messenger-attachment-options button:hover{border-color:var(--brand);background:#faf8ff}
+.messenger-attachment-options button>span{font-size:1.5rem}
+.messenger-attachment-options button strong{font-size:.9rem}
+.messenger-attachment-options button small{color:var(--muted);font-size:.7rem}
+.messenger-attachment-preview{padding:0 10px 10px;background:#fff}
+.messenger-pending-attachment{display:grid;grid-template-columns:48px minmax(0,1fr) 30px;align-items:center;gap:10px;padding:9px;border:1px solid var(--line);border-radius:14px;background:#fafaff}
+.messenger-pending-attachment img{width:48px;height:48px;border-radius:10px;object-fit:cover}
+.messenger-pending-file-icon{width:48px;height:48px;border-radius:10px;background:#eeeaff;display:grid;place-items:center;font-size:1.35rem}
+.messenger-pending-attachment strong,.messenger-pending-attachment small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.messenger-pending-attachment small{color:var(--muted);margin-top:3px}
+.messenger-pending-attachment button{border:0;background:transparent;font-size:1.4rem;cursor:pointer;color:var(--muted)}
+.messenger-bubble.has-attachment{padding:6px;overflow:hidden;max-width:min(360px,78vw)}
+.messenger-message-text{padding:7px 9px}
+.messenger-image-attachment{display:block;border-radius:12px;overflow:hidden;background:#eee}
+.messenger-image-attachment img{display:block;width:min(300px,68vw);max-height:320px;object-fit:cover}
+.messenger-file-attachment{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px;color:inherit;background:rgba(255,255,255,.16);border-radius:11px;text-decoration:none}
+.messenger-message-row:not(.mine) .messenger-file-attachment{background:#f2f0fa}
+.messenger-file-attachment strong,.messenger-file-attachment small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.messenger-file-attachment small{margin-top:2px;opacity:.72;font-size:.62rem}
+.messenger-file-attachment>span:last-child{font-size:.63rem;font-weight:850}
+.v8-reviews form button[disabled],.messenger-send-button[disabled]{opacity:.6;cursor:wait}
+@media(max-width:760px){
+  .messenger-attachment-options{grid-template-columns:1fr}
+  .messenger-attachment-modal{margin:auto auto 10px;border-radius:20px 20px 14px 14px}
+}
