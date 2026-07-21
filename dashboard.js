@@ -190,6 +190,86 @@ function openPublishFromMobileNavigation(){
   }
 }
 
+
+function profileIsComplete(){
+  return Boolean(currentProfile?.full_name&&currentProfile?.username&&currentProfile?.bio&&currentProfile?.avatar_url);
+}
+
+function renderDesktopDashboardExperience(){
+  const desktop=document.querySelector('.dashboard-desktop-live');
+  if(!desktop)return;
+  const name=currentProfile?.full_name||currentProfile?.username||currentUser?.email?.split('@')[0]||'Creator';
+  const hasProducts=mine.length>0;
+  const profileComplete=profileIsComplete();
+  const hasWebsite=Boolean(currentProfile?.website_url);
+  const publicUrl=currentUser?`creator.html?id=${encodeURIComponent(currentUser.id)}`:'creator.html';
+  const quickView=$('#quickViewProfile');
+  if(quickView)quickView.href=publicUrl;
+
+  const welcomeTitle=$('#dashboardWelcomeTitle');
+  const welcomeCopy=$('#dashboardWelcomeCopy');
+  const primary=$('#desktopPrimaryAction');
+  if(hasProducts){
+    if(welcomeTitle)welcomeTitle.textContent=`Keep growing, ${name}`;
+    if(welcomeCopy)welcomeCopy.textContent=`You have ${mine.length} product${mine.length===1?'':'s'} live. Keep your storefront fresh and respond to buyer interest.`;
+    if(primary)primary.textContent='+ Add another product';
+  }else{
+    if(welcomeTitle)welcomeTitle.textContent=`Welcome, ${name}`;
+    if(welcomeCopy)welcomeCopy.textContent='Your creator workspace is ready. Publish your first product to start appearing in the marketplace.';
+    if(primary)primary.textContent='+ Add your first product';
+  }
+
+  const checklist=[
+    {label:'Creator account ready',done:true,action:null},
+    {label:'Complete your creator profile',done:profileComplete,action:'profile'},
+    {label:'Publish your first product',done:hasProducts,action:'product'},
+    {label:'Add your website or shop link',done:hasWebsite,action:'profile'}
+  ];
+  const doneCount=checklist.filter(item=>item.done).length;
+  const progressText=$('#setupProgressText');
+  const progressBar=$('#setupProgressBar');
+  if(progressText)progressText.textContent=`${doneCount} of ${checklist.length}`;
+  if(progressBar)progressBar.style.width=`${Math.round(doneCount/checklist.length*100)}%`;
+  const list=$('#creatorChecklist');
+  if(list)list.innerHTML=checklist.map((item,index)=>`<button type="button" class="creator-checklist-item ${item.done?'is-done':''}" data-setup-action="${item.action||''}" ${item.done&&!item.action?'disabled':''}><span class="creator-check-icon">${item.done?'✓':index+1}</span><span>${esc(item.label)}</span>${item.action&&!item.done?'<small>Complete</small>':''}</button>`).join('');
+
+  const activity=$('#dashboardRecentActivity');
+  if(activity){
+    const rows=[];
+    if(mine[0])rows.push({icon:'▣',title:`${mine[0].title} is live`,copy:`${mine[0].views||0} views · ${mine[0].clicks||0} clicks`,href:`product.html?id=${mine[0].id}`});
+    if(profileComplete)rows.push({icon:'✓',title:'Creator profile is ready',copy:'Buyers can see a complete storefront.',href:publicUrl});
+    else rows.push({icon:'◎',title:'Complete your creator profile',copy:'Add an avatar and bio to improve trust.',action:'profile'});
+    if(!hasProducts)rows.unshift({icon:'＋',title:'Publish your first product',copy:'Add an image, price, and product link.',action:'product'});
+    rows.push({icon:'↗',title:'Share your storefront',copy:'Open your public profile and copy its link.',href:publicUrl});
+    activity.innerHTML=rows.slice(0,3).map(row=>row.href?`<a class="dashboard-activity-row" href="${row.href}"><span>${row.icon}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.copy)}</small></div><b>›</b></a>`:`<button type="button" class="dashboard-activity-row" data-activity-action="${row.action}"><span>${row.icon}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.copy)}</small></div><b>›</b></button>`).join('');
+  }
+}
+
+function openProfileEditor(){
+  const editor=$('#creatorProfileEditor');
+  if(editor){
+    editor.hidden=false;
+    editor.scrollIntoView({behavior:'smooth',block:'start'});
+    window.setTimeout(()=>$('#profileForm input[name="full_name"]')?.focus(),350);
+  }
+}
+
+function setupDesktopDashboardActions(){
+  $('#desktopPrimaryAction')?.addEventListener('click',()=>openProduct());
+  $('#quickAddProduct')?.addEventListener('click',()=>openProduct());
+  $('#quickEditProfile')?.addEventListener('click',openProfileEditor);
+  $('#creatorChecklist')?.addEventListener('click',event=>{
+    const action=event.target.closest('[data-setup-action]')?.dataset.setupAction;
+    if(action==='product')openProduct();
+    if(action==='profile')openProfileEditor();
+  });
+  $('#dashboardRecentActivity')?.addEventListener('click',event=>{
+    const action=event.target.closest('[data-activity-action]')?.dataset.activityAction;
+    if(action==='product')openProduct();
+    if(action==='profile')openProfileEditor();
+  });
+}
+
 async function load(){await waitAuth();if(!currentUser)return location.href='index.html';const [a,p]=await Promise.all([sb.rpc('creator_analytics'),sb.from('products').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false})]);if(p.error)return toast(p.error.message);mine=p.data||[];const d=a.data||{};$('#analytics').innerHTML=Object.entries({
   Products:d.products||mine.length,
   Views:d.views||0,
@@ -220,7 +300,7 @@ async function load(){await waitAuth();if(!currentUser)return location.href='ind
           <button class="btn btn-danger" data-delete="${x.id}">Delete</button>
         </div>
       </div>
-    </article>`).join('')||'<div class="card empty-state"><p>No products yet.</p></div>';fillProfile();renderDashboardIdentity()}
+    </article>`).join('')||'<div class="card empty-state"><p>No products yet.</p></div>';fillProfile();renderDashboardIdentity();renderDesktopDashboardExperience()}
 function fillProfile(){if(!currentProfile)return;for(const k of ['full_name','username','bio','website_url','location'])$('#profileForm').elements[k].value=currentProfile[k]||'';$('#avatarUrl').value=currentProfile.avatar_url||'';if(currentProfile.avatar_url){$('#avatarPreview').src=currentProfile.avatar_url;$('#avatarPreviewWrap').hidden=false}}
 async function saveProfile(e){e.preventDefault();const f=new FormData(e.target),file=f.get('avatar_file');let url=$('#avatarUrl').value||null;try{if(file?.size)url=await upload('avatars',file);const {error}=await sb.rpc('update_my_profile',{p_full_name:f.get('full_name'),p_username:f.get('username'),p_bio:f.get('bio'),p_avatar_url:url,p_website_url:f.get('website_url'),p_location:f.get('location')});if(error)throw error;toast('Profile updated.','success');await refreshIdentity();fillProfile();const editor=$('#creatorProfileEditor');if(editor)editor.hidden=true}catch(x){toast(x.message)}}
 function openProduct(p=null){const f=$('#productForm');f.reset();f.elements.product_id.value=p?.id||'';for(const k of ['title','creator','price','category','product_type','brand','country','product_url','description'])if(p)f.elements[k].value=p[k]||'';f.elements.tags.value=p?.tags?.join(', ')||'';f.elements.image_url.value=p?.image_url||'';$('#productModalTitle').textContent=p?'Edit product':'Publish a product';$('#saveProduct').textContent=p?'Save changes':'Publish immediately';$('#productImagePreviewWrap').hidden=!p?.image_url;if(p?.image_url)$('#productImagePreview').src=p.image_url;$('#titleCount').textContent=f.elements.title.value.length;$('#productModal').showModal()}
@@ -290,4 +370,4 @@ async function saveProduct(e){
 }
 
 async function remove(id){const p=mine.find(x=>x.id===id);if(!confirm(`Delete "${p?.title||'this product'}" permanently?`))return;const {error}=await sb.from('products').delete().eq('id',id).eq('owner_id',currentUser.id);if(error)return toast(error.message);toast('Product deleted.','success');load()}
-window.addEventListener('DOMContentLoaded',()=>{setupDashboardProfileMenu();openPublishFromMobileNavigation();cats.forEach(c=>$('#productCategory').insertAdjacentHTML('beforeend',`<option>${esc(c)}</option>`));$('#openSubmit').onclick=()=>openProduct();$('#closeProductModal').onclick=()=>$('#productModal').close();$('#profileForm').onsubmit=saveProfile;$('#productForm').onsubmit=saveProduct;$('#avatarFile').onchange=()=>preview($('#avatarFile'),$('#avatarPreview'),$('#avatarPreviewWrap'));$('#productImageFile').onchange=()=>preview($('#productImageFile'),$('#productImagePreview'),$('#productImagePreviewWrap'));$('#productForm').elements.title.oninput=e=>$('#titleCount').textContent=e.target.value.length;$('#myProducts').onclick=e=>{const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-delete]');if(eb)openProduct(mine.find(x=>x.id===eb.dataset.edit));if(db)remove(db.dataset.delete)};load()});
+window.addEventListener('DOMContentLoaded',()=>{setupDashboardProfileMenu();setupDesktopDashboardActions();openPublishFromMobileNavigation();cats.forEach(c=>$('#productCategory').insertAdjacentHTML('beforeend',`<option>${esc(c)}</option>`));$('#openSubmit').onclick=()=>openProduct();$('#closeProductModal').onclick=()=>$('#productModal').close();$('#profileForm').onsubmit=saveProfile;$('#productForm').onsubmit=saveProduct;$('#avatarFile').onchange=()=>preview($('#avatarFile'),$('#avatarPreview'),$('#avatarPreviewWrap'));$('#productImageFile').onchange=()=>preview($('#productImageFile'),$('#productImagePreview'),$('#productImagePreviewWrap'));$('#productForm').elements.title.oninput=e=>$('#titleCount').textContent=e.target.value.length;$('#myProducts').onclick=e=>{const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-delete]');if(eb)openProduct(mine.find(x=>x.id===eb.dataset.edit));if(db)remove(db.dataset.delete)};load()});
