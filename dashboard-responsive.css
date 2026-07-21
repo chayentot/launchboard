@@ -81,3 +81,59 @@
 @media (max-width:1100px) and (min-width:901px){
   .dashboard-live-grid,.dashboard-live-grid-secondary{grid-template-columns:1fr}
 }
+
+/* LaunchBoard V8.3.1 mobile creator workspace.
+   These rules are isolated below 900px. Desktop V8.3 remains unchanged. */
+.dashboard-mobile-live,.dashboard-mobile-bottom-area{display:none}
+
+@media (max-width:900px){
+  .page-dashboard .page{padding-bottom:92px}
+  .page-dashboard .container{max-width:100%}
+  .dashboard-mobile-live,.dashboard-mobile-bottom-area{display:block}
+  .dashboard-mobile-head{margin-bottom:10px!important}
+  .dashboard-mobile-head h1{font-size:1.55rem;margin-top:4px}
+
+  .mobile-dashboard-welcome{padding:18px;border-radius:20px;margin-bottom:18px;background:linear-gradient(145deg,#fff 5%,#f1edff 100%)}
+  .mobile-dashboard-welcome h2{margin:7px 0 7px;font-size:1.35rem;line-height:1.18}
+  .mobile-dashboard-welcome>p{margin:0;color:var(--muted);font-size:.84rem;line-height:1.5}
+  .mobile-setup-summary{margin:17px 0 14px}
+  .mobile-setup-label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;font-size:.78rem}
+  .mobile-setup-label span{color:var(--brand);font-weight:900}
+  .mobile-dashboard-welcome .setup-progress{height:9px;margin:0}
+  .mobile-dashboard-welcome .btn{min-height:48px;border-radius:14px}
+
+  .mobile-dashboard-section{margin-bottom:18px}
+  .mobile-dashboard-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .mobile-dashboard-section-head h2{margin:4px 0 0;font-size:1.05rem}
+  .mobile-dashboard-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .mobile-dashboard-action{min-height:82px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff;color:inherit;text-decoration:none;text-align:left;box-shadow:0 8px 22px rgba(24,18,48,.04)}
+  .mobile-dashboard-action span{font-size:1.28rem;color:var(--brand);font-weight:800}
+  .mobile-dashboard-action strong{font-size:.78rem;line-height:1.2}
+  .mobile-dashboard-action:active{transform:scale(.98)}
+
+  .page-dashboard #analytics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}
+  .page-dashboard #analytics .v8-stat-card{min-height:92px;padding:15px;border-radius:17px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+  .page-dashboard #analytics .v8-stat-card strong{font-size:1.35rem}
+  .page-dashboard #analytics .v8-stat-card span{margin-top:4px;font-size:.72rem;color:var(--muted)}
+
+  .page-dashboard .dashboard-desktop-live{display:none!important}
+  .page-dashboard .section{margin-top:0}
+  .page-dashboard .two-col{display:block}
+  .page-dashboard .two-col>.card.pad{padding:15px;border-radius:18px}
+  .products-section-head{margin-bottom:12px}
+  .products-section-head h2{font-size:1.08rem}
+  .compact-add-product{min-height:38px;padding:8px 13px}
+
+  .dashboard-mobile-bottom-area{margin-top:16px}
+  .dashboard-mobile-profile-card{display:block;margin:0 0 14px}
+  .dashboard-mobile-activity-card{padding:15px;border-radius:18px;margin-bottom:10px}
+  .dashboard-mobile-activity-card .dashboard-recent-activity{display:grid;gap:7px}
+  .dashboard-mobile-activity-card .dashboard-activity-row{width:100%;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;border:0;background:transparent;color:inherit;text-decoration:none;text-align:left;padding:9px 5px;border-radius:12px}
+  .dashboard-mobile-activity-card .dashboard-activity-row>span{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#efeaff;color:var(--brand);font-weight:900}
+  .dashboard-mobile-activity-card .dashboard-activity-row strong,.dashboard-mobile-activity-card .dashboard-activity-row small{display:block}
+  .dashboard-mobile-activity-card .dashboard-activity-row strong{font-size:.78rem}
+  .dashboard-mobile-activity-card .dashboard-activity-row small{margin-top:3px;color:var(--muted);font-size:.68rem;line-height:1.35}
+  .dashboard-mobile-activity-card .dashboard-activity-row>b{color:var(--muted);font-size:1.1rem}
+
+  .page-dashboard .creator-profile-editor{margin:14px 0}
+}
