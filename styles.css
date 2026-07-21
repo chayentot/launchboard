@@ -4650,9 +4650,6 @@ dialog.modal > .pad {
   .page-product .desktop-product-info h1{font-size:2rem}
   .page-product .product-below-fold{grid-template-columns:minmax(0,1fr) 290px}
 }
-
-
-/* =========================================================
    V8.1.8 REVIEWS + MESSAGE ATTACHMENTS
    ========================================================= */
 .messenger-attachment-modal{width:min(430px,calc(100vw - 24px))}
