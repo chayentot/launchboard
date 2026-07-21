@@ -110,17 +110,26 @@ function renderDashboardIdentity(){
   const nameEl=$('#dashboardIdentityName');
   const avatarEl=$('#dashboardIdentityAvatar');
   const publicLink=$('#viewPublicProfileLink');
+  const mobileName=$('#mobileDashboardName');
+  const mobileAvatar=$('#mobileDashboardAvatar');
+  const mobilePublicLink=$('#mobileViewPublicProfileLink');
+  const publicUrl=currentUser?`creator.html?id=${encodeURIComponent(currentUser.id)}`:'creator.html';
 
   if(nameEl)nameEl.textContent=name;
-  if(publicLink&&currentUser)publicLink.href=`creator.html?id=${encodeURIComponent(currentUser.id)}`;
+  if(mobileName)mobileName.textContent=name;
+  if(publicLink)publicLink.href=publicUrl;
+  if(mobilePublicLink)mobilePublicLink.href=publicUrl;
 
-  if(avatarEl){
+  const paintAvatar=element=>{
+    if(!element)return;
     if(currentProfile?.avatar_url){
-      avatarEl.innerHTML=`<img src="${esc(safeUrl(currentProfile.avatar_url,''))}" alt="">`;
+      element.innerHTML=`<img src="${esc(safeUrl(currentProfile.avatar_url,''))}" alt="">`;
     }else{
-      avatarEl.textContent=name.slice(0,1).toUpperCase();
+      element.textContent=name.slice(0,1).toUpperCase();
     }
-  }
+  };
+  paintAvatar(avatarEl);
+  paintAvatar(mobileAvatar);
 }
 
 function setupDashboardProfileMenu(){
@@ -136,6 +145,16 @@ function setupDashboardProfileMenu(){
   $('#editCreatorProfileButton')?.addEventListener('click',()=>{
     menu.hidden=true;
     identity.setAttribute('aria-expanded','false');
+    const editor=$('#creatorProfileEditor');
+    if(editor){
+      editor.hidden=false;
+      editor.scrollIntoView({behavior:'smooth',block:'start'});
+      window.setTimeout(()=>$('#profileForm input[name="full_name"]')?.focus(),350);
+    }
+  });
+
+
+  $('#mobileEditCreatorProfileButton')?.addEventListener('click',()=>{
     const editor=$('#creatorProfileEditor');
     if(editor){
       editor.hidden=false;
