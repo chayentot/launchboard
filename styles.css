@@ -4685,3 +4685,57 @@ dialog.modal > .pad {
 /* LaunchBoard V8.2 beta: premium messaging polish */
 .messenger-quick-replies{display:flex;gap:8px;overflow-x:auto;padding:8px 14px 4px;background:#fff;border-top:1px solid #eef0f6;scrollbar-width:none}.messenger-quick-replies::-webkit-scrollbar{display:none}.messenger-quick-replies button{border:1px solid #ddd7ff;background:#f8f6ff;color:#5f3dff;border-radius:999px;padding:8px 12px;white-space:nowrap;font:inherit;font-weight:700;cursor:pointer}.messenger-quick-replies button:hover{background:#eee9ff}.messenger-attachment-options{grid-template-columns:repeat(3,minmax(0,1fr))}.messenger-product-reference-card{transition:transform .18s ease,box-shadow .18s ease}.messenger-product-reference-card:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(45,31,120,.12)}
 @media (max-width:720px){.messenger-attachment-options{grid-template-columns:1fr}.messenger-quick-replies{padding-bottom:7px}}
+
+
+/* =========================================================
+   LaunchBoard V8.4.1 — Marketplace Homepage Redesign
+   Homepage-only discovery polish. Dashboard and product pages
+   remain independent and unchanged.
+   ========================================================= */
+.marketplace-trust-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;color:var(--muted);font-size:13px;font-weight:700}
+.marketplace-trust-row span{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.82)}
+.marketplace-trust-row span::before{content:'✓';color:var(--ok);font-weight:900}
+
+#featuredSection{padding-top:34px}
+#featuredSection .section-heading,.v8-home-rail .section-heading,#creators .section-heading{margin-bottom:20px}
+#discover{position:relative}
+#discover::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(109,74,255,.035),transparent 220px);pointer-events:none}
+#discover>.container{position:relative}
+.discover-heading-row{align-items:flex-end}
+.discovery-toolbar{border-radius:18px;box-shadow:0 12px 30px rgba(26,30,60,.06)}
+.category-chips .chip{font-weight:750;transition:.18s ease}
+.category-chips .chip:hover,.category-chips .chip.active{border-color:var(--brand);background:#efeaff;color:#5138d5}
+
+.v8-product-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.v8-product-card:hover{transform:translateY(-3px);box-shadow:0 18px 44px rgba(26,30,60,.12);border-color:#d8d0ff}
+.v8-product-card .product-media{aspect-ratio:4/3;height:auto;display:block;overflow:hidden;background:#ececf4}
+.v8-product-card .product-media img{transition:transform .28s ease}
+.v8-product-card:hover .product-media img{transform:scale(1.025)}
+.v8-card-content{display:flex;flex-direction:column;min-height:190px}
+.v8-card-content h3{font-size:18px;line-height:1.25;margin:8px 0 10px}
+.v8-card-category{align-self:flex-start}
+.v84-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:10px}
+.v84-view-product{font-size:12px;font-weight:800;color:var(--brand);white-space:nowrap}
+.v8-card-creator{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+
+.v8-home-rail{padding-block:42px}
+.v8-horizontal-products{scroll-snap-type:x proximity}
+.v8-mini-product{scroll-snap-align:start}
+.creator-card{transition:transform .18s ease,border-color .18s ease}
+.creator-card:hover{transform:translateY(-2px);border-color:#d8d0ff}
+
+@media(max-width:700px){
+  .mobile-commerce-header{background:linear-gradient(180deg,#fff,#f7f5ff);border-bottom:1px solid var(--line)}
+  .mobile-commerce-header h1{font-size:25px;letter-spacing:-.03em}
+  .mobile-commerce-search{box-shadow:0 10px 24px rgba(26,30,60,.08)}
+  .mobile-shop-section-nav{gap:8px;padding-top:12px;padding-bottom:12px}
+  .mobile-shop-section-nav a{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:750;white-space:nowrap}
+  #featuredSection{padding-top:24px}
+  .section{padding-block:34px}
+  .v8-product-card:hover{transform:none}
+  .v8-card-content{min-height:170px}
+  .v8-card-content h3{font-size:16px}
+  .v84-card-bottom{align-items:flex-end}
+  .v84-view-product{display:none}
+  .marketplace-trust-row{display:none}
+}

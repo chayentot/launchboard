@@ -22,12 +22,12 @@ function productCard(product){
       </a>
       <div class="v8-card-content">
         <div class="v8-card-signals">
-          <span>♡ ${likeCounts[product.id]||0}</span>
-          <span>◉ ${product.views||0}</span>
+          <span title="Likes">♡ ${likeCounts[product.id]||0}</span>
+          <span title="Views">◉ ${product.views||0}</span>
         </div>
         <span class="v8-card-category">${esc(product.category||'Product')}</span>
         <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${esc(product.title)}</a></h3>
-        <strong class="product-price">${esc(formatPeso(product.price))}</strong>
+        <div class="v84-card-bottom"><strong class="product-price">${esc(formatPeso(product.price))}</strong><span class="v84-view-product">View product →</span></div>
         <a class="v8-card-creator" href="creator.html?id=${encodeURIComponent(product.owner_id)}">
           ${esc(creator.full_name||product.creator||'Creator')} ${badge(creator)}
         </a>
