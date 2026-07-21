@@ -4680,3 +4680,8 @@ dialog.modal > .pad {
   .messenger-attachment-options{grid-template-columns:1fr}
   .messenger-attachment-modal{margin:auto auto 10px;border-radius:20px 20px 14px 14px}
 }
+
+
+/* LaunchBoard V8.2 beta: premium messaging polish */
+.messenger-quick-replies{display:flex;gap:8px;overflow-x:auto;padding:8px 14px 4px;background:#fff;border-top:1px solid #eef0f6;scrollbar-width:none}.messenger-quick-replies::-webkit-scrollbar{display:none}.messenger-quick-replies button{border:1px solid #ddd7ff;background:#f8f6ff;color:#5f3dff;border-radius:999px;padding:8px 12px;white-space:nowrap;font:inherit;font-weight:700;cursor:pointer}.messenger-quick-replies button:hover{background:#eee9ff}.messenger-attachment-options{grid-template-columns:repeat(3,minmax(0,1fr))}.messenger-product-reference-card{transition:transform .18s ease,box-shadow .18s ease}.messenger-product-reference-card:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(45,31,120,.12)}
+@media (max-width:720px){.messenger-attachment-options{grid-template-columns:1fr}.messenger-quick-replies{padding-bottom:7px}}

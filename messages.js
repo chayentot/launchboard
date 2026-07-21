@@ -346,6 +346,25 @@ async function uploadMessageAttachment(file){
   return {url:data.publicUrl,name:file.name,type:file.type,size:file.size};
 }
 
+async function shareConversationProduct(){
+  const conversation=conversations.find(item=>item.id===active);
+  if(!conversation?.product)return toast('This conversation has no product to share.');
+  const product=conversation.product;
+  const body=`🛍 ${product.title || 'Product'} — ${formatPeso(product.price)}\nproduct.html?id=${product.id}`;
+  try{
+    const {error}=await sb.from('messages').insert({conversation_id:active,sender_id:currentUser.id,body});
+    if(error)throw error;
+    $('#messageAttachmentModal')?.close?.();
+    await loadMessages();
+  }catch(error){toast(formatMessageError(error));}
+}
+
+function updateQuickReplies(messageCount){
+  const wrap=$('#messageQuickReplies');
+  if(!wrap)return;
+  wrap.hidden=!active||messageCount>0;
+}
+
 async function loadMessages(){
   const conversation=conversations.find(item=>item.id===active);
   if(!conversation){
@@ -390,6 +409,7 @@ async function loadMessages(){
     </div>`;
   }).join('');
 
+  updateQuickReplies((data||[]).length);
   container.innerHTML=productReference+(messageHistory
     ||'<div class="messenger-empty compact"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>');
 
@@ -545,6 +565,13 @@ window.addEventListener('DOMContentLoaded',()=>{
   });
   $('#closeAttachmentMenu')?.addEventListener('click',()=>$('#messageAttachmentModal')?.close?.());
   $$('[data-attachment-accept]').forEach(button=>button.addEventListener('click',()=>chooseAttachment(button.dataset.attachmentAccept)));
+  $('#shareConversationProduct')?.addEventListener('click',shareConversationProduct);
+  $$('[data-quick-reply]').forEach(button=>button.addEventListener('click',()=>{
+    const input=$('#messageForm input[name="body"]');
+    if(!input)return;
+    input.value=button.dataset.quickReply||'';
+    input.focus();
+  }));
   $('#messageAttachmentInput')?.addEventListener('change',event=>{
     const file=event.target.files?.[0]||null;
     if(file&&file.size>MAX_MESSAGE_ATTACHMENT_BYTES){event.target.value='';return toast('Attachments must be 15 MB or smaller.');}
