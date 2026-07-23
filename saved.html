@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Saved products · LaunchBoard</title>
+  <link rel="stylesheet" href="styles.css?v=9.5.0">
+  <link rel="stylesheet" href="library-pages.css?v=9.5.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js?v=9.5.0"></script>
+  <script defer src="common.js?v=9.5.0"></script>
+  <script defer src="saved.js?v=9.5.0"></script>
+  <meta name="launchboard-build" content="9.5.0">
+</head>
+<body class="page-library">
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="index.html">Launch<span>Board</span></a>
+    <nav class="navlinks">
+      <a href="index.html">Marketplace</a>
+      <a href="saved.html">Saved</a>
+      <a href="following.html">Following</a>
+    </nav>
+    <div class="actions" id="navActions"></div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="container library-container">
+    <section class="library-hero">
+      <div>
+        <span class="eyebrow">YOUR COLLECTION</span>
+        <h1>Saved products</h1>
+        <p>Products you liked are kept here so you can find them again quickly.</p>
+      </div>
+      <a class="btn btn-ghost library-back" href="dashboard.html">Back to profile</a>
+    </section>
+
+    <section class="library-toolbar card" aria-label="Saved products tools">
+      <label class="library-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="librarySearch" type="search" placeholder="Search saved products" autocomplete="off">
+      </label>
+      <strong id="libraryCount">0</strong>
+    </section>
+
+    <div id="libraryStatus" class="library-status" role="status" aria-live="polite">Loading…</div>
+    <section id="savedProductsGrid" class="library-grid" aria-label="Saved products"></section>
+  </div>
+</main>
+
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+  <a href="index.html"><span>⌂</span><small>Home</small></a>
+  <a href="messages.html"><span>✉</span><small>Message</small></a>
+  <a href="dashboard.html?publish=1"><span>＋</span><small>Sell</small></a>
+  <a href="notifications.html"><span>♢</span><small>Notification</small></a>
+  <a href="dashboard.html"><span>◎</span><small>Profile</small></a>
+</nav>
+
+<div class="toast" id="toast"></div>
+</body>
+</html>
