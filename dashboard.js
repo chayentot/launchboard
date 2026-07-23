@@ -169,11 +169,13 @@ function setupDashboardProfileMenu(){
     window.scrollTo({top:0,behavior:'smooth'});
   });
 
-  $('#dashboardLogoutButton')?.addEventListener('click',async()=>{
+  const logoutFromDashboard=async()=>{
     const {error}=await sb.auth.signOut();
     if(error)return toast(error.message);
     location.href='index.html';
-  });
+  };
+  $('#dashboardLogoutButton')?.addEventListener('click',logoutFromDashboard);
+  $('#mobileDashboardLogoutButton')?.addEventListener('click',logoutFromDashboard);
 
   document.addEventListener('click',event=>{
     if(!menu.hidden&&!event.target.closest('.dashboard-head-actions')){

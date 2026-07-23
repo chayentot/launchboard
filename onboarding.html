@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Choose creators · LaunchBoard</title>
+  <link rel="stylesheet" href="styles.css?v=9.2.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js?v=9.2.0"></script>
+  <script defer src="common.js?v=9.2.0"></script>
+  <script defer src="onboarding.js?v=9.2.0"></script>
+  <meta name="launchboard-build" content="9.2.0">
+</head>
+<body class="page-onboarding">
+  <header class="topbar"><div class="container nav"><a class="brand" href="index.html">Launch<span>Board</span></a><div class="onboarding-header-note">New member setup</div></div></header>
+  <main class="onboarding-page">
+    <section class="container onboarding-shell">
+      <div class="onboarding-intro">
+        <span class="eyebrow">Personalize your marketplace</span>
+        <h1>Follow at least 5 creators</h1>
+        <p>Choose creators you are interested in. This helps LaunchBoard build a better home feed and makes it easier to start conversations.</p>
+        <div class="onboarding-progress-card">
+          <div><strong id="selectedCount">0</strong><span>/ 5 selected</span></div>
+          <div class="onboarding-progress"><span id="onboardingProgressBar"></span></div>
+        </div>
+      </div>
+      <label class="onboarding-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="creatorOnboardingSearch" type="search" placeholder="Search creators">
+      </label>
+      <div id="onboardingCreators" class="onboarding-creator-grid" aria-live="polite"></div>
+      <div class="onboarding-sticky-action">
+        <p id="onboardingStatus">Choose 5 creators to continue.</p>
+        <button class="btn btn-primary" id="completeOnboarding" type="button" disabled>Continue to LaunchBoard</button>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+</body>
+</html>

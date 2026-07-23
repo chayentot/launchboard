@@ -1,4 +1,4 @@
-const LAUNCHBOARD_BUILD='8.0.0';
+const LAUNCHBOARD_BUILD='9.2.0';
 console.info('LaunchBoard build',LAUNCHBOARD_BUILD);
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
@@ -106,14 +106,40 @@ async function refreshIdentity(){
   document.dispatchEvent(new CustomEvent('launchboard:auth-ready'));
 }
 
+async function enforceCreatorOnboarding(){
+  if(!sb||!currentUser)return;
+  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  const allowedPages=new Set(['onboarding.html','reset-password.html','privacy.html','terms.html','guidelines.html','support.html']);
+  if(allowedPages.has(page))return;
+
+  const required=currentUser.user_metadata?.creator_onboarding_required===true;
+  if(!required)return;
+
+  const {count,error}=await sb
+    .from('creator_follows')
+    .select('creator_id',{count:'exact',head:true})
+    .eq('follower_id',currentUser.id);
+  if(error){
+    console.error('Onboarding follow count failed:',error);
+    return;
+  }
+  if((count||0)<5){
+    location.replace('onboarding.html');
+    return;
+  }
+  await sb.auth.updateUser({data:{creator_onboarding_required:false}});
+}
+
 async function boot(){
   await refreshIdentity();
+  await enforceCreatorOnboarding();
 
   if(!sb)return;
   sb.auth.onAuthStateChange(async(event,session)=>{
     currentUser=session?.user||null;
     currentProfile=currentUser?await fetchProfile(currentUser.id):null;
     renderNav();
+    await enforceCreatorOnboarding();
     document.dispatchEvent(new CustomEvent('launchboard:auth-changed',{detail:{event}}));
     // Deliberately no location.reload(): prevents authentication refresh loops.
   });
@@ -169,15 +195,26 @@ async function signupSubmit(event){
   const button=event.submitter||form.querySelector('button[type="submit"],button');
   const data=new FormData(form);
   button.disabled=true;
-  const {error}=await sb.auth.signUp({
+  const {data:signupData,error}=await sb.auth.signUp({
     email:String(data.get('email')||'').trim(),
     password:String(data.get('password')||''),
-    options:{data:{full_name:String(data.get('name')||'').trim()}}
+    options:{
+      emailRedirectTo:new URL('onboarding.html',location.href).href,
+      data:{
+        full_name:String(data.get('name')||'').trim(),
+        creator_onboarding_required:true
+      }
+    }
   });
   button.disabled=false;
   if(error)return toast(error.message);
   form.closest('dialog')?.close();
-  toast('Account created. Check your email if confirmation is enabled.','success');
+  form.reset();
+  if(signupData?.session){
+    location.href='onboarding.html';
+    return;
+  }
+  toast('Account created. Confirm your email, then choose at least 5 creators.','success');
 }
 
 
@@ -502,100 +539,3 @@ async function refreshMobileNotificationBadge(){
 document.addEventListener('launchboard:auth-ready',refreshMobileNotificationBadge);
 document.addEventListener('launchboard:notifications-changed',refreshMobileNotificationBadge);
 
-
-/* LaunchBoard V9.0 — website-visible PWA installation */
-(function launchboardPwaInstall(){
-  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-  const isIos=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  let deferredInstallPrompt=null;
-
-  function ensurePwaHead(){
-    if(!document.querySelector('link[rel="manifest"]')){
-      const manifest=document.createElement('link');
-      manifest.rel='manifest';
-      manifest.href='manifest.webmanifest';
-      document.head.appendChild(manifest);
-    }
-    if(!document.querySelector('link[rel="apple-touch-icon"]')){
-      const apple=document.createElement('link');
-      apple.rel='apple-touch-icon';
-      apple.href='icons/icon-192.png';
-      document.head.appendChild(apple);
-    }
-    if(!document.querySelector('meta[name="theme-color"]')){
-      const theme=document.createElement('meta');
-      theme.name='theme-color';
-      theme.content='#111827';
-      document.head.appendChild(theme);
-    }
-  }
-
-  function installMarkup(){
-    if(isStandalone||document.querySelector('#lbInstallApp'))return;
-    const wrapper=document.createElement('section');
-    wrapper.id='lbInstallApp';
-    wrapper.className='lb-install-app';
-    wrapper.hidden=true;
-    wrapper.setAttribute('aria-label','Install LaunchBoard');
-    wrapper.innerHTML=`
-      <div class="lb-install-app__content">
-        <div class="lb-install-app__icon" aria-hidden="true">LB</div>
-        <div class="lb-install-app__copy">
-          <strong>Get the LaunchBoard app</strong>
-          <span>Install it from this website—no app store required.</span>
-        </div>
-        <button class="btn btn-primary lb-install-app__button" id="lbInstallButton" type="button">Install app</button>
-        <button class="lb-install-app__close" id="lbInstallClose" type="button" aria-label="Dismiss install invitation">×</button>
-      </div>
-      <dialog class="modal lb-install-help" id="lbInstallHelp">
-        <div class="pad">
-          <h2>Install LaunchBoard</h2>
-          <div id="lbInstallHelpText"></div>
-          <button class="btn btn-primary" id="lbInstallHelpClose" type="button">Got it</button>
-        </div>
-      </dialog>`;
-    document.body.appendChild(wrapper);
-
-    const button=wrapper.querySelector('#lbInstallButton');
-    const close=wrapper.querySelector('#lbInstallClose');
-    const help=wrapper.querySelector('#lbInstallHelp');
-    const helpText=wrapper.querySelector('#lbInstallHelpText');
-
-    close.addEventListener('click',()=>wrapper.hidden=true);
-    wrapper.querySelector('#lbInstallHelpClose').addEventListener('click',()=>help.close());
-    button.addEventListener('click',async()=>{
-      if(deferredInstallPrompt){
-        deferredInstallPrompt.prompt();
-        const choice=await deferredInstallPrompt.userChoice;
-        if(choice.outcome==='accepted')wrapper.hidden=true;
-        deferredInstallPrompt=null;
-        return;
-      }
-      helpText.innerHTML=isIos
-        ? '<p>On iPhone or iPad:</p><ol><li>Open this site in Safari.</li><li>Tap the Share button.</li><li>Choose <strong>Add to Home Screen</strong>.</li><li>Tap <strong>Add</strong>.</li></ol>'
-        : '<p>Open your browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>. On desktop Chrome or Edge, you can also use the install icon in the address bar.</p>';
-      help.showModal();
-    });
-
-    if(isIos){
-      wrapper.hidden=false;
-    }
-  }
-
-  ensurePwaHead();
-  if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(error=>console.warn('Service worker registration failed',error)));
-  }
-  window.addEventListener('beforeinstallprompt',event=>{
-    event.preventDefault();
-    deferredInstallPrompt=event;
-    installMarkup();
-    const wrapper=document.querySelector('#lbInstallApp');
-    if(wrapper)wrapper.hidden=false;
-  });
-  window.addEventListener('appinstalled',()=>{
-    const wrapper=document.querySelector('#lbInstallApp');
-    if(wrapper)wrapper.hidden=true;
-  });
-  document.addEventListener('DOMContentLoaded',installMarkup);
-})();

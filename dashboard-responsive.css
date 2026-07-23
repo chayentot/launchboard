@@ -143,3 +143,23 @@
   .dashboard-mobile-live>.dashboard-mobile-profile-card{margin:0 0 14px}
   .dashboard-mobile-live>.mobile-dashboard-welcome{margin-top:0}
 }
+
+
+/* LaunchBoard V9.2 — complete mobile profile menu */
+@media (max-width:900px){
+  .dashboard-mobile-profile-actions-v92{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .dashboard-mobile-profile-actions-v92 .dashboard-mobile-logout{
+    grid-column:1/-1;
+    width:100%;
+  }
+  .dashboard-mobile-profile-actions-v92 a,
+  .dashboard-mobile-profile-actions-v92 button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    text-decoration:none;
+  }
+}
