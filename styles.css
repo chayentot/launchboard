@@ -4753,3 +4753,35 @@ dialog.modal > .pad {
 .lb-install-help ol{padding-left:1.3rem;line-height:1.8}
 @media(max-width:640px){.lb-install-app{left:10px;right:10px;bottom:calc(76px + env(safe-area-inset-bottom))}.lb-install-app__content{align-items:flex-start;flex-wrap:wrap}.lb-install-app__copy{padding-right:28px}.lb-install-app__button{width:100%;order:4}.lb-install-app__close{position:absolute;right:18px;top:17px}}
 @media(display-mode:standalone){.lb-install-app{display:none!important}}
+
+
+/* LaunchBoard V9.1 — external product links in conversations */
+.messenger-external-product{margin-top:10px;border:1px solid #dcd4ff;border-radius:15px;background:#fff;overflow:hidden}
+.messenger-external-product-main{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:11px;align-items:center;padding:12px 13px}
+.messenger-external-product-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:#efeaff;font-size:1.15rem}
+.messenger-external-product-copy{min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.messenger-external-product-copy small{color:var(--brand);font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.messenger-external-product-copy strong{margin-top:3px;font-size:.88rem}
+.messenger-external-product-copy span{margin-top:3px;color:var(--muted);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.messenger-external-visit{border:0;background:transparent;color:var(--brand);font:inherit;font-size:.75rem;font-weight:900;cursor:pointer;white-space:nowrap}
+.messenger-external-actions{display:flex;justify-content:flex-end;padding:7px 12px;border-top:1px solid #eeeaff;background:#faf9ff}
+.messenger-external-actions button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:.68rem;font-weight:800;cursor:pointer}
+.messenger-external-notice{display:flex;gap:9px;align-items:flex-start;margin-top:8px;padding:10px 12px;border:1px solid #e4e6ee;border-radius:13px;background:#f8f9fc;color:#555d73}
+.messenger-external-notice>span{font-size:1rem}
+.messenger-external-notice p{margin:0;font-size:.7rem;line-height:1.45}
+.messenger-external-notice strong{display:block;margin-bottom:2px;color:var(--ink);font-size:.72rem}
+.messenger-external-dialog{max-width:520px}
+.messenger-external-dialog .pad{text-align:center}
+.messenger-external-dialog-icon{width:54px;height:54px;margin:0 auto 12px;display:grid;place-items:center;border-radius:16px;background:#efeaff;font-size:1.45rem}
+.messenger-external-dialog h2{margin:0 0 8px}
+.messenger-external-dialog p{margin:0;color:var(--muted)}
+.messenger-external-dialog-url{margin:16px 0 10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#f7f8fc;overflow-wrap:anywhere;text-align:left;font-size:.78rem;font-weight:750}
+.messenger-external-dialog-warning{padding:11px 12px;border-radius:12px;background:#fff7e8;color:#714b00;text-align:left;font-size:.74rem;line-height:1.45}
+.messenger-external-dialog-actions{justify-content:flex-end;margin-top:18px}
+@media(max-width:600px){
+  .messenger-external-product-main{grid-template-columns:38px minmax(0,1fr);padding:10px}
+  .messenger-external-product-icon{width:38px;height:38px}
+  .messenger-external-visit{grid-column:1/-1;width:100%;min-height:38px;border-radius:10px;background:#6d4aff;color:#fff}
+  .messenger-external-dialog-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .messenger-external-dialog-actions .btn{width:100%}
+}

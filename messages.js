@@ -59,7 +59,7 @@ async function loadConversations(){
       {data:messageRows,error:messagesError}
     ]=await Promise.all([
       productIds.length
-        ? sb.from('products').select('id,title,price,image_url,creator,owner_id').in('id',productIds)
+        ? sb.from('products').select('id,title,price,image_url,creator,owner_id,product_url').in('id',productIds)
         : Promise.resolve({data:[],error:null}),
       otherUserIds.length
         ? sb.from('profiles').select('id,full_name,username,avatar_url,is_verified').in('id',otherUserIds)
@@ -267,10 +267,47 @@ function renderEmptyChat(){
 }
 
 
+function normalizeExternalProductUrl(value){
+  const raw=String(value||'').trim();
+  if(!raw)return '';
+  const candidate=/^https?:\/\//i.test(raw)?raw:`https://${raw}`;
+  try{
+    const parsed=new URL(candidate);
+    return ['http:','https:'].includes(parsed.protocol)?parsed.href:'';
+  }catch{
+    return '';
+  }
+}
+
+function externalUrlHost(value){
+  try{return new URL(value).hostname.replace(/^www\./i,'');}
+  catch{return 'External website';}
+}
+
 function renderProductReference(product){
   const image=product.image_url
     ? `<img src="${esc(safeUrl(product.image_url,''))}" alt="${esc(product.title||'Product')}">`
     : '<span class="messenger-product-reference-placeholder">No image</span>';
+  const externalUrl=normalizeExternalProductUrl(product.product_url);
+  const externalSection=externalUrl?`
+    <section class="messenger-external-product" aria-label="External product website">
+      <div class="messenger-external-product-main">
+        <span class="messenger-external-product-icon" aria-hidden="true">🌐</span>
+        <span class="messenger-external-product-copy">
+          <small>External product</small>
+          <strong>View the actual product</strong>
+          <span>${esc(externalUrlHost(externalUrl))}</span>
+        </span>
+        <button class="messenger-external-visit" type="button" data-external-product-url="${esc(externalUrl)}">Visit website →</button>
+      </div>
+      <div class="messenger-external-actions">
+        <button type="button" data-copy-external-url="${esc(externalUrl)}">Copy link</button>
+      </div>
+    </section>
+    <aside class="messenger-external-notice" role="note">
+      <span aria-hidden="true">🛡️</span>
+      <p><strong>LaunchBoard safety notice</strong>This link opens an external website. Verify the address before purchasing or sharing personal or payment information.</p>
+    </aside>`:'';
 
   return `<article class="messenger-product-reference" aria-label="Product being discussed">
     <span class="messenger-product-reference-label">Talking about</span>
@@ -283,7 +320,43 @@ function renderProductReference(product){
       </span>
       <span class="messenger-product-reference-link">View product ›</span>
     </a>
+    ${externalSection}
   </article>`;
+}
+
+function openExternalProductNotice(url){
+  const normalized=normalizeExternalProductUrl(url);
+  if(!normalized)return toast('This external product link is invalid.');
+  const dialog=$('#externalProductDialog');
+  const urlText=$('#externalProductUrlText');
+  const continueButton=$('#continueExternalProduct');
+  if(!dialog||!continueButton){
+    window.open(normalized,'_blank','noopener,noreferrer');
+    return;
+  }
+  if(urlText)urlText.textContent=normalized;
+  continueButton.dataset.url=normalized;
+  dialog.showModal();
+}
+
+async function copyExternalProductUrl(url){
+  const normalized=normalizeExternalProductUrl(url);
+  if(!normalized)return toast('This external product link is invalid.');
+  try{
+    await navigator.clipboard.writeText(normalized);
+    toast('External product link copied.','success');
+  }catch{
+    toast('Unable to copy the link.');
+  }
+}
+
+function bindExternalProductActions(){
+  $$('[data-external-product-url]').forEach(button=>{
+    button.onclick=()=>openExternalProductNotice(button.dataset.externalProductUrl);
+  });
+  $$('[data-copy-external-url]').forEach(button=>{
+    button.onclick=()=>copyExternalProductUrl(button.dataset.copyExternalUrl);
+  });
 }
 
 function humanFileSize(bytes){
@@ -413,6 +486,7 @@ async function loadMessages(){
   container.innerHTML=productReference+(messageHistory
     ||'<div class="messenger-empty compact"><span>✉</span><strong>No messages yet</strong><p>Send the first message below.</p></div>');
 
+  bindExternalProductActions();
   container.scrollTop=container.scrollHeight;
   renderConversationList();
 }
@@ -586,6 +660,15 @@ window.addEventListener('DOMContentLoaded',()=>{
   $('#creatorSearchInput')?.addEventListener('input',renderCreatorDirectory);
   $('#followingCreatorsTab')?.addEventListener('click',()=>setCreatorMode('following'));
   $('#allCreatorsTab')?.addEventListener('click',()=>setCreatorMode('all'));
+  $('#cancelExternalProduct')?.addEventListener('click',()=>$('#externalProductDialog')?.close?.());
+  $('#continueExternalProduct')?.addEventListener('click',event=>{
+    const url=normalizeExternalProductUrl(event.currentTarget.dataset.url);
+    $('#externalProductDialog')?.close?.();
+    if(url)window.open(url,'_blank','noopener,noreferrer');
+  });
+  $('#externalProductDialog')?.addEventListener('click',event=>{
+    if(event.target===event.currentTarget)event.currentTarget.close();
+  });
 
   document.addEventListener('launchboard:auth-ready',()=>{
     loadConversations();
