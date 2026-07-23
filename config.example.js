@@ -1,6 +1,7 @@
-// Copy these values from Supabase Dashboard → Project Settings → API.
-// The publishable/anon key is safe to use in a browser when Row Level Security is enabled.
+// LaunchBoard V10 configuration.
+// Copy this file to config.js and add your public Supabase project values.
+// The anon key is intended for browser use; protect data with Supabase RLS.
 window.LAUNCHBOARD_CONFIG = {
-  supabaseUrl: "YOUR_SUPABASE_URL",
-  supabaseKey: "YOUR_SUPABASE_PUBLISHABLE_KEY"
+  supabaseUrl: "https://YOUR_PROJECT.supabase.co",
+  supabaseAnonKey: "YOUR_PUBLIC_ANON_KEY"
 };

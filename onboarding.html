@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><link rel="manifest" href="manifest.webmanifest?v=10.0.0"><meta name="theme-color" content="#6c4cf6"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Choose creators — LaunchBoard</title>
   <meta name="description" content="Follow creators to personalize your LaunchBoard marketplace.">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=10.0.0">
   <style>
     .onboarding-page{min-height:100vh;background:#f7f7fa;padding:24px 0 48px}.onboarding-shell{width:min(100% - 28px,980px);margin:auto}.onboarding-head{display:grid;gap:10px;margin:20px 0}.onboarding-head h1{margin:0;font-size:clamp(1.7rem,5vw,2.7rem)}.onboarding-progress-card{position:sticky;top:10px;z-index:10;padding:15px;margin-bottom:18px}.onboarding-progress-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.onboarding-progress-track{height:10px;margin-top:10px;overflow:hidden;border-radius:999px;background:#eceaf6}.onboarding-progress-track span{display:block;width:0;height:100%;background:var(--brand,#6957e8);transition:width .2s}.onboarding-search{width:100%;min-height:46px;margin-top:12px;padding:0 14px;border:1px solid var(--line,#ddd);border-radius:12px;background:#fff}.onboarding-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.onboarding-creator{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:12px;padding:14px}.onboarding-avatar{width:58px;height:58px;overflow:hidden;border-radius:50%;display:grid;place-items:center;background:#eceaf6;font-weight:900}.onboarding-avatar img{width:100%;height:100%;object-fit:cover}.onboarding-copy{min-width:0}.onboarding-copy strong,.onboarding-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.onboarding-copy small{margin-top:4px;color:var(--muted,#6b6b78)}.onboarding-follow{grid-column:1/-1;width:100%}.onboarding-follow[aria-pressed="true"]{background:#eceaf6;color:#342b78}.onboarding-actions{display:flex;justify-content:flex-end;margin-top:18px}.onboarding-actions .btn{min-width:180px}.onboarding-empty{grid-column:1/-1;padding:32px;text-align:center}@media(max-width:760px){.onboarding-page{padding-top:8px}.onboarding-grid{grid-template-columns:1fr}.onboarding-progress-card{top:6px}.onboarding-actions{position:sticky;bottom:8px}.onboarding-actions .btn{width:100%}}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script defer src="common.js?v=9.3.1"></script>
-  <script defer src="onboarding.js?v=9.3.1"></script>
+  <script src="config.js?v=10.0.0"></script>
+  <script defer src="common.js?v=10.0.0"></script>
+  <script defer src="onboarding.js?v=10.0.0"></script>
 </head>
 <body>
   <main class="onboarding-page">
@@ -35,5 +35,5 @@
     </div>
   </main>
   <div class="toast" id="toast"></div>
-</body>
+<script defer src="production.js?v=10.0.0"></script></body>
 </html>

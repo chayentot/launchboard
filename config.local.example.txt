@@ -1,0 +1,2 @@
+The packaged config.js was replaced to avoid distributing project credentials.
+Copy config.example.js to config.js and insert your project URL and anon key.

@@ -1,21 +1,31 @@
-# LaunchBoard V8.1
+# LaunchBoard V8.1 — Messaging and Product Notifications
 
-This is the complete LaunchBoard website based on V8, with a focused Messages-page cleanup.
+## What changed
 
-## Change in this release
+- Messages are now reserved for direct conversations only.
+- New chat messages no longer create Notification Center entries.
+- The Messages bottom-navigation item shows an unread conversation badge.
+- Chat supports image and document attachments up to 15 MB.
+- New products from followed creators appear in Notifications.
+- Opening a product notification goes directly to the product page.
+- Notifications were removed from the Profile/Dashboard area.
+- Notification filters are now Products, Social, and System.
+- Home section headings are left aligned and Recommended is a mobile horizontal rail.
 
-- Removed the **Recent** heading above the conversation list.
-- Conversations now begin immediately below the **Following** section.
-- The conversation list remains ordered by latest activity and still shows each chat's latest-message preview and timestamp.
-- Android Back-button behavior is unchanged in this package.
+## Required database update
 
-## Deployment
+Run `supabase-v8.1-messaging-products.sql` once in Supabase Dashboard → SQL Editor.
 
-Upload every file in this package to the root of the GitHub Pages repository, replacing the previous website files. Keep `config.js` configured with the existing Supabase project credentials.
+This migration creates:
 
+- `conversation_reads`
+- `message_attachments`
+- the public `chat-attachments` Storage bucket
+- follower new-product notification trigger
+- policies for attachment and read-state access
 
-## V8.1.2 correction
-- Removed the duplicate Notifications panel from the Profile/Dashboard page.
-- Kept notifications exclusively in the dedicated Notification navigation tab.
-- Left-aligned the New Today heading while keeping See all on the right.
-- Added cache-busted asset versions so the corrected UI is loaded after deployment.
+It also removes the old message-to-notification trigger and deletes legacy message notifications.
+
+## Deploy
+
+Upload all files to the GitHub Pages repository, including the SQL migration for reference. Ensure `config.js` contains the production Supabase URL and anon key. After pushing, wait for the Pages workflow to complete successfully before testing.

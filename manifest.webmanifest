@@ -1,16 +1,17 @@
 {
-  "id": "./",
   "name": "LaunchBoard",
   "short_name": "LaunchBoard",
-  "description": "Discover products and connect with independent creators.",
+  "description": "Discover products and creators, save products, follow creators and message sellers.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "background_color": "#f7f7fb",
+  "theme_color": "#6c4cf6",
   "orientation": "portrait-primary",
-  "background_color": "#ffffff",
-  "theme_color": "#111827",
-  "icons": [
-    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
-  ]
+  "categories": [
+    "shopping",
+    "social",
+    "business"
+  ],
+  "icons": []
 }
