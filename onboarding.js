@@ -88,7 +88,8 @@ async function loadOnboarding(){
   onboardingProfiles=profilesResult.data||[];
   followedIds=new Set((followsResult.data||[]).map(row=>row.creator_id));
 
-  if(stateResult.data?.onboarding_completed===true&&followedIds.size>=REQUIRED_FOLLOWS){
+  const forcedNewUser=isOnboardingPending(currentUser.id)||new URLSearchParams(location.search).get('new')==='1';
+  if(!forcedNewUser&&stateResult.data?.onboarding_completed===true&&followedIds.size>=REQUIRED_FOLLOWS){
     location.replace('index.html');
     return;
   }
@@ -101,6 +102,7 @@ $('#creatorSearch')?.addEventListener('input',renderOnboardingCreators);
 $('#finishOnboarding')?.addEventListener('click',async()=>{
   if(followedIds.size<REQUIRED_FOLLOWS)return;
   await syncProfileProgress();
+  clearOnboardingPending();
   location.replace('index.html');
 });
 

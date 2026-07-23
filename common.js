@@ -140,6 +140,23 @@ async function initializeNewUserProfile(user,fullName=''){
   return true;
 }
 
+const ONBOARDING_PENDING_KEY='launchboard_onboarding_pending_v1';
+
+function markOnboardingPending(userId){
+  try{localStorage.setItem(ONBOARDING_PENDING_KEY,String(userId||'1'));}catch{}
+}
+
+function isOnboardingPending(userId=currentUser?.id){
+  try{
+    const value=localStorage.getItem(ONBOARDING_PENDING_KEY);
+    return Boolean(value)&&(!userId||value==='1'||value===String(userId));
+  }catch{return false;}
+}
+
+function clearOnboardingPending(){
+  try{localStorage.removeItem(ONBOARDING_PENDING_KEY);}catch{}
+}
+
 async function enforceCreatorOnboarding(){
   if(!sb||!currentUser)return;
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
@@ -149,9 +166,13 @@ async function enforceCreatorOnboarding(){
   ]);
   if(allowedPages.has(page))return;
 
+  if(isOnboardingPending(currentUser.id)){
+    location.replace('onboarding.html?new=1');
+    return;
+  }
+
   const state=await getOnboardingState(currentUser.id);
   if(!state){
-    // Do not lock out users if the V9.3 SQL migration has not been installed.
     console.warn('LaunchBoard onboarding state is unavailable. Run launchboard-v9.3.sql.');
     return;
   }
@@ -239,11 +260,12 @@ async function signupSubmit(event){
     return toast('Signup succeeded but no session was created. Turn off Confirm email in Supabase Authentication → Providers → Email.');
   }
 
+  markOnboardingPending(signupData.session.user.id);
   await initializeNewUserProfile(signupData.session.user,fullName);
   form.closest('dialog')?.close();
   form.reset();
   toast('Welcome to LaunchBoard! Choose 5 creators to continue.','success');
-  setTimeout(()=>location.replace('onboarding.html'),250);
+  setTimeout(()=>location.replace('onboarding.html?new=1'),100);
 }
 
 
