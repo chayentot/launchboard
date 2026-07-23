@@ -4785,3 +4785,50 @@ dialog.modal > .pad {
   .messenger-external-dialog-actions{display:grid;grid-template-columns:1fr;gap:8px}
   .messenger-external-dialog-actions .btn{width:100%}
 }
+
+/* LaunchBoard V9.1.1 — fixed-height desktop messenger workspace
+   Keeps long conversation histories inside their own scroll areas instead of
+   making the left inbox and the whole page grow with the open chat. */
+@media (min-width: 761px) {
+  .messenger-page {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .messenger-mobile-shell {
+    height: clamp(560px, calc(100vh - 118px), 760px);
+    min-height: 0;
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+  }
+
+  .messenger-inbox-section {
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 10px;
+  }
+
+  .messenger-conversation-list {
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    align-content: start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+  }
+
+  .messenger-chat-pane {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .messenger-messages {
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+}
