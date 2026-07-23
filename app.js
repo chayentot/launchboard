@@ -5,6 +5,7 @@ let likeCounts={};
 let creatorsById={};
 let allProfiles=[];
 let allFollowerRows=[];
+let myFollowedCreatorIds=new Set();
 
 const categories=['Fashion & Clothing','Shoes','Bags & Accessories','Beauty & Cosmetics','Jewelry','Electronics','Software & Apps','Games','Books & eBooks','Courses & Education','Art & Design','Home & Living','Furniture','Food & Drinks','Pet Products','Automotive','Health & Fitness','Toys & Kids','Gifts','Handmade & Crafts','Tools & Hardware','Travel & Services','Other'];
 
@@ -89,7 +90,7 @@ async function fetchDiscoveryData(){
     sb.from('profiles').select('*').eq('is_banned',false),
     sb.from('product_likes').select('product_id'),
     sb.from('product_reviews').select('product_id'),
-    sb.from('creator_follows').select('creator_id')
+    sb.from('creator_follows').select('creator_id,follower_id')
   ]);
 
   if(productsResult.error)return toast(productsResult.error.message);
@@ -98,6 +99,7 @@ async function fetchDiscoveryData(){
   allProducts=productsResult.data||[];
   allProfiles=profilesResult.data||[];
   allFollowerRows=followsResult.data||[];
+  myFollowedCreatorIds=new Set(allFollowerRows.filter(row=>row.follower_id===currentUser?.id).map(row=>row.creator_id));
   creatorsById=Object.fromEntries(allProfiles.map(profile=>[profile.id,profile]));
 
   likeCounts=(likesResult.data||[]).reduce((map,row)=>{
@@ -193,6 +195,7 @@ function recommendationScore(product){
   score+=Math.min(Number(likeCounts[product.id]||0),7);
   if(product.is_featured)score+=3;
   if(creator.is_verified)score+=2;
+  if(myFollowedCreatorIds.has(product.owner_id))score+=12;
   return score+Math.random()*2;
 }
 

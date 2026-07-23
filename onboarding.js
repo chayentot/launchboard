@@ -1,99 +1,107 @@
-const REQUIRED_CREATOR_FOLLOWS=5;
+const REQUIRED_FOLLOWS=5;
 let onboardingProfiles=[];
-let onboardingFollowing=new Set();
+let followedIds=new Set();
 
 function onboardingAvatar(profile){
   if(profile.avatar_url){
-    return `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="${esc(profile.full_name||profile.username||'Creator')}" loading="lazy">`;
+    return `<img src="${esc(safeUrl(profile.avatar_url,''))}" alt="${esc(profile.full_name||profile.username||'Creator')}">`;
   }
-  return `<span>${esc((profile.full_name||profile.username||'?').slice(0,1).toUpperCase())}</span>`;
+  return esc((profile.full_name||profile.username||'?').slice(0,1).toUpperCase());
 }
 
 function updateOnboardingProgress(){
-  const count=onboardingFollowing.size;
-  const capped=Math.min(count,REQUIRED_CREATOR_FOLLOWS);
-  $('#selectedCount').textContent=count;
-  $('#onboardingProgressBar').style.width=`${(capped/REQUIRED_CREATOR_FOLLOWS)*100}%`;
-  const complete=count>=REQUIRED_CREATOR_FOLLOWS;
-  $('#completeOnboarding').disabled=!complete;
-  $('#onboardingStatus').textContent=complete
-    ? 'You are ready to continue.'
-    : `Choose ${REQUIRED_CREATOR_FOLLOWS-count} more creator${REQUIRED_CREATOR_FOLLOWS-count===1?'':'s'} to continue.`;
+  const count=followedIds.size;
+  const complete=count>=REQUIRED_FOLLOWS;
+  $('#onboardingProgressText').textContent=`${count} of ${REQUIRED_FOLLOWS} followed`;
+  $('#onboardingStatus').textContent=complete?'Ready to continue':`Choose ${REQUIRED_FOLLOWS-count} more`;
+  $('#onboardingProgressBar').style.width=`${Math.min(100,count/REQUIRED_FOLLOWS*100)}%`;
+  $('#finishOnboarding').disabled=!complete;
 }
 
 function renderOnboardingCreators(){
-  const target=$('#onboardingCreators');
-  const query=String($('#creatorOnboardingSearch')?.value||'').trim().toLowerCase();
-  const visible=onboardingProfiles.filter(profile=>{
-    const text=[profile.full_name,profile.username,profile.bio,profile.location].filter(Boolean).join(' ').toLowerCase();
-    return !query||text.includes(query);
-  });
-  target.innerHTML=visible.map(profile=>{
-    const followed=onboardingFollowing.has(profile.id);
-    return `<article class="card onboarding-creator-card ${followed?'is-following':''}">
-      <div class="onboarding-creator-avatar">${onboardingAvatar(profile)}</div>
-      <div class="onboarding-creator-copy">
-        <h2>${esc(profile.full_name||profile.username||'Creator')} ${badge(profile)}</h2>
-        <p>${esc(profile.bio||profile.location||'Independent creator')}</p>
-      </div>
-      <button class="btn ${followed?'btn-soft':'btn-primary'}" type="button" data-onboarding-follow="${esc(profile.id)}" aria-pressed="${followed}">${followed?'Following ✓':'Follow'}</button>
+  const query=$('#creatorSearch').value.trim().toLowerCase();
+  const rows=onboardingProfiles.filter(profile=>[
+    profile.full_name,profile.username,profile.bio,profile.location
+  ].join(' ').toLowerCase().includes(query));
+
+  $('#onboardingCreatorGrid').innerHTML=rows.map(profile=>{
+    const following=followedIds.has(profile.id);
+    return `<article class="card onboarding-creator">
+      <span class="onboarding-avatar">${onboardingAvatar(profile)}</span>
+      <span class="onboarding-copy"><strong>${esc(profile.full_name||profile.username||'Creator')} ${badge(profile)}</strong><small>${esc(profile.bio||profile.location||'Independent creator')}</small></span>
+      <button class="btn ${following?'btn-soft':'btn-primary'} onboarding-follow" type="button" data-creator-id="${esc(profile.id)}" aria-pressed="${following}">${following?'Following':'Follow'}</button>
     </article>`;
-  }).join('')||'<div class="card empty-state"><h3>No creators found</h3><p>Try a different search.</p></div>';
+  }).join('')||'<div class="card onboarding-empty"><p>No creators match your search.</p></div>';
 
-  $$('[data-onboarding-follow]',target).forEach(button=>button.addEventListener('click',()=>toggleOnboardingFollow(button.dataset.onboardingFollow,button)));
+  $$('.onboarding-follow').forEach(button=>button.addEventListener('click',()=>toggleCreatorFollow(button)));
 }
 
-async function toggleOnboardingFollow(creatorId,button){
-  if(!currentUser||!creatorId)return;
+async function syncProfileProgress(){
+  const count=followedIds.size;
+  const completed=count>=REQUIRED_FOLLOWS;
+  // The SQL trigger is the source of truth. This update gives immediate UI
+  // feedback in projects whose trigger deployment is delayed.
+  const {error}=await sb.from('profiles').update({
+    following_count:count,
+    onboarding_completed:completed
+  }).eq('id',currentUser.id);
+  if(error)console.warn('Profile onboarding sync failed:',error);
+  currentProfile={...(currentProfile||{}),following_count:count,onboarding_completed:completed};
+}
+
+async function toggleCreatorFollow(button){
+  if(button.disabled)return;
+  const creatorId=button.dataset.creatorId;
+  const wasFollowing=followedIds.has(creatorId);
   button.disabled=true;
-  const followed=onboardingFollowing.has(creatorId);
-  const query=followed
-    ? sb.from('creator_follows').delete().eq('follower_id',currentUser.id).eq('creator_id',creatorId)
-    : sb.from('creator_follows').insert({follower_id:currentUser.id,creator_id:creatorId});
-  const {error}=await query;
+
+  const result=wasFollowing
+    ? await sb.from('creator_follows').delete().eq('follower_id',currentUser.id).eq('creator_id',creatorId)
+    : await sb.from('creator_follows').insert({follower_id:currentUser.id,creator_id:creatorId});
+
   button.disabled=false;
-  if(error)return toast(error.message);
-  if(followed)onboardingFollowing.delete(creatorId); else onboardingFollowing.add(creatorId);
-  renderOnboardingCreators();
+  if(result.error)return toast(result.error.message);
+  wasFollowing?followedIds.delete(creatorId):followedIds.add(creatorId);
+  await syncProfileProgress();
   updateOnboardingProgress();
+  renderOnboardingCreators();
 }
 
-async function loadCreatorOnboarding(){
+async function loadOnboarding(){
   if(!sb)return toast('Supabase is not configured.');
+  if(!authReady)await new Promise(resolve=>document.addEventListener('launchboard:auth-ready',resolve,{once:true}));
   if(!currentUser){
     location.replace('index.html');
     return;
   }
 
-  const [profilesResult,followsResult]=await Promise.all([
-    sb.from('profiles').select('id,full_name,username,bio,location,avatar_url,is_verified').neq('id',currentUser.id).eq('is_banned',false).order('is_verified',{ascending:false}).limit(100),
-    sb.from('creator_follows').select('creator_id').eq('follower_id',currentUser.id)
+  const [profilesResult,followsResult,stateResult]=await Promise.all([
+    sb.from('profiles').select('id,full_name,username,bio,location,avatar_url,is_verified,is_banned').neq('id',currentUser.id).eq('is_banned',false).order('is_verified',{ascending:false}),
+    sb.from('creator_follows').select('creator_id').eq('follower_id',currentUser.id),
+    sb.from('profiles').select('onboarding_completed,following_count').eq('id',currentUser.id).maybeSingle()
   ]);
+
   if(profilesResult.error)return toast(profilesResult.error.message);
   if(followsResult.error)return toast(followsResult.error.message);
+  if(stateResult.error)return toast('Run launchboard-v9.3.sql before using onboarding.');
 
   onboardingProfiles=profilesResult.data||[];
-  onboardingFollowing=new Set((followsResult.data||[]).map(row=>row.creator_id));
-  renderOnboardingCreators();
-  updateOnboardingProgress();
-}
+  followedIds=new Set((followsResult.data||[]).map(row=>row.creator_id));
 
-async function completeCreatorOnboarding(){
-  if(onboardingFollowing.size<REQUIRED_CREATOR_FOLLOWS)return;
-  const button=$('#completeOnboarding');
-  button.disabled=true;
-  button.textContent='Finishing…';
-  const {error}=await sb.auth.updateUser({data:{creator_onboarding_required:false,creator_onboarding_completed_at:new Date().toISOString()}});
-  if(error){
-    button.disabled=false;
-    button.textContent='Continue to LaunchBoard';
-    return toast(error.message);
+  if(stateResult.data?.onboarding_completed===true&&followedIds.size>=REQUIRED_FOLLOWS){
+    location.replace('index.html');
+    return;
   }
-  location.replace('index.html');
+
+  updateOnboardingProgress();
+  renderOnboardingCreators();
 }
 
-document.addEventListener('launchboard:auth-ready',loadCreatorOnboarding,{once:true});
-window.addEventListener('DOMContentLoaded',()=>{
-  $('#creatorOnboardingSearch')?.addEventListener('input',renderOnboardingCreators);
-  $('#completeOnboarding')?.addEventListener('click',completeCreatorOnboarding);
+$('#creatorSearch')?.addEventListener('input',renderOnboardingCreators);
+$('#finishOnboarding')?.addEventListener('click',async()=>{
+  if(followedIds.size<REQUIRED_FOLLOWS)return;
+  await syncProfileProgress();
+  location.replace('index.html');
 });
+
+document.addEventListener('DOMContentLoaded',loadOnboarding);

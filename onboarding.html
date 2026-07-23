@@ -2,39 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Choose creators · LaunchBoard</title>
-  <link rel="stylesheet" href="styles.css?v=9.2.0">
+  <title>Choose creators — LaunchBoard</title>
+  <meta name="description" content="Follow creators to personalize your LaunchBoard marketplace.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .onboarding-page{min-height:100vh;background:#f7f7fa;padding:24px 0 48px}.onboarding-shell{width:min(100% - 28px,980px);margin:auto}.onboarding-head{display:grid;gap:10px;margin:20px 0}.onboarding-head h1{margin:0;font-size:clamp(1.7rem,5vw,2.7rem)}.onboarding-progress-card{position:sticky;top:10px;z-index:10;padding:15px;margin-bottom:18px}.onboarding-progress-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.onboarding-progress-track{height:10px;margin-top:10px;overflow:hidden;border-radius:999px;background:#eceaf6}.onboarding-progress-track span{display:block;width:0;height:100%;background:var(--brand,#6957e8);transition:width .2s}.onboarding-search{width:100%;min-height:46px;margin-top:12px;padding:0 14px;border:1px solid var(--line,#ddd);border-radius:12px;background:#fff}.onboarding-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.onboarding-creator{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:12px;padding:14px}.onboarding-avatar{width:58px;height:58px;overflow:hidden;border-radius:50%;display:grid;place-items:center;background:#eceaf6;font-weight:900}.onboarding-avatar img{width:100%;height:100%;object-fit:cover}.onboarding-copy{min-width:0}.onboarding-copy strong,.onboarding-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.onboarding-copy small{margin-top:4px;color:var(--muted,#6b6b78)}.onboarding-follow{grid-column:1/-1;width:100%}.onboarding-follow[aria-pressed="true"]{background:#eceaf6;color:#342b78}.onboarding-actions{display:flex;justify-content:flex-end;margin-top:18px}.onboarding-actions .btn{min-width:180px}.onboarding-empty{grid-column:1/-1;padding:32px;text-align:center}@media(max-width:760px){.onboarding-page{padding-top:8px}.onboarding-grid{grid-template-columns:1fr}.onboarding-progress-card{top:6px}.onboarding-actions{position:sticky;bottom:8px}.onboarding-actions .btn{width:100%}}
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js?v=9.2.0"></script>
-  <script defer src="common.js?v=9.2.0"></script>
-  <script defer src="onboarding.js?v=9.2.0"></script>
-  <meta name="launchboard-build" content="9.2.0">
+  <script src="config.js"></script>
+  <script defer src="common.js?v=9.3.0"></script>
+  <script defer src="onboarding.js?v=9.3.0"></script>
 </head>
-<body class="page-onboarding">
-  <header class="topbar"><div class="container nav"><a class="brand" href="index.html">Launch<span>Board</span></a><div class="onboarding-header-note">New member setup</div></div></header>
+<body>
   <main class="onboarding-page">
-    <section class="container onboarding-shell">
-      <div class="onboarding-intro">
+    <div class="onboarding-shell">
+      <a class="brand" href="index.html">Launch<span>Board</span></a>
+      <header class="onboarding-head">
         <span class="eyebrow">Personalize your marketplace</span>
         <h1>Follow at least 5 creators</h1>
-        <p>Choose creators you are interested in. This helps LaunchBoard build a better home feed and makes it easier to start conversations.</p>
-        <div class="onboarding-progress-card">
-          <div><strong id="selectedCount">0</strong><span>/ 5 selected</span></div>
-          <div class="onboarding-progress"><span id="onboardingProgressBar"></span></div>
-        </div>
-      </div>
-      <label class="onboarding-search">
-        <span aria-hidden="true">⌕</span>
-        <input id="creatorOnboardingSearch" type="search" placeholder="Search creators">
-      </label>
-      <div id="onboardingCreators" class="onboarding-creator-grid" aria-live="polite"></div>
-      <div class="onboarding-sticky-action">
-        <p id="onboardingStatus">Choose 5 creators to continue.</p>
-        <button class="btn btn-primary" id="completeOnboarding" type="button" disabled>Continue to LaunchBoard</button>
-      </div>
-    </section>
+        <p class="muted">Choose creators you like. Their products will receive priority in your recommendations.</p>
+      </header>
+
+      <section class="card onboarding-progress-card" aria-live="polite">
+        <div class="onboarding-progress-row"><strong id="onboardingProgressText">0 of 5 followed</strong><span id="onboardingStatus">Choose 5 to continue</span></div>
+        <div class="onboarding-progress-track"><span id="onboardingProgressBar"></span></div>
+        <input class="onboarding-search" id="creatorSearch" type="search" placeholder="Search creators" aria-label="Search creators">
+      </section>
+
+      <section class="onboarding-grid" id="onboardingCreatorGrid" aria-label="Creators"></section>
+      <div class="onboarding-actions"><button class="btn btn-primary" id="finishOnboarding" type="button" disabled>Continue to LaunchBoard</button></div>
+    </div>
   </main>
   <div class="toast" id="toast"></div>
 </body>

@@ -1,4 +1,4 @@
-const LAUNCHBOARD_BUILD='9.2.0';
+const LAUNCHBOARD_BUILD='9.3.0';
 console.info('LaunchBoard build',LAUNCHBOARD_BUILD);
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
@@ -106,28 +106,59 @@ async function refreshIdentity(){
   document.dispatchEvent(new CustomEvent('launchboard:auth-ready'));
 }
 
+async function getOnboardingState(userId=currentUser?.id){
+  if(!sb||!userId)return null;
+  const {data,error}=await sb
+    .from('profiles')
+    .select('onboarding_completed,following_count')
+    .eq('id',userId)
+    .maybeSingle();
+  if(error){
+    console.error('Onboarding state failed:',error);
+    return null;
+  }
+  return data||null;
+}
+
+async function initializeNewUserProfile(user,fullName=''){
+  if(!sb||!user)return false;
+  const payload={
+    id:user.id,
+    full_name:String(fullName||user.user_metadata?.full_name||'').trim(),
+    onboarding_completed:false,
+    following_count:0
+  };
+
+  // Most LaunchBoard databases create profiles through an auth trigger.
+  // Upsert also covers projects where that trigger is not installed.
+  const {error}=await sb.from('profiles').upsert(payload,{onConflict:'id'});
+  if(error){
+    console.error('New profile initialization failed:',error);
+    return false;
+  }
+  currentProfile={...(currentProfile||{}),...payload};
+  return true;
+}
+
 async function enforceCreatorOnboarding(){
   if(!sb||!currentUser)return;
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  const allowedPages=new Set(['onboarding.html','reset-password.html','privacy.html','terms.html','guidelines.html','support.html']);
+  const allowedPages=new Set([
+    'onboarding.html','reset-password.html','privacy.html','terms.html',
+    'guidelines.html','support.html'
+  ]);
   if(allowedPages.has(page))return;
 
-  const required=currentUser.user_metadata?.creator_onboarding_required===true;
-  if(!required)return;
+  const state=await getOnboardingState(currentUser.id);
+  if(!state){
+    // Do not lock out users if the V9.3 SQL migration has not been installed.
+    console.warn('LaunchBoard onboarding state is unavailable. Run launchboard-v9.3.sql.');
+    return;
+  }
 
-  const {count,error}=await sb
-    .from('creator_follows')
-    .select('creator_id',{count:'exact',head:true})
-    .eq('follower_id',currentUser.id);
-  if(error){
-    console.error('Onboarding follow count failed:',error);
-    return;
-  }
-  if((count||0)<5){
+  if(state.onboarding_completed!==true){
     location.replace('onboarding.html');
-    return;
   }
-  await sb.auth.updateUser({data:{creator_onboarding_required:false}});
 }
 
 async function boot(){
@@ -195,26 +226,24 @@ async function signupSubmit(event){
   const button=event.submitter||form.querySelector('button[type="submit"],button');
   const data=new FormData(form);
   button.disabled=true;
+  const fullName=String(data.get('name')||'').trim();
   const {data:signupData,error}=await sb.auth.signUp({
     email:String(data.get('email')||'').trim(),
     password:String(data.get('password')||''),
-    options:{
-      emailRedirectTo:new URL('onboarding.html',location.href).href,
-      data:{
-        full_name:String(data.get('name')||'').trim(),
-        creator_onboarding_required:true
-      }
-    }
+    options:{data:{full_name:fullName}}
   });
   button.disabled=false;
   if(error)return toast(error.message);
+
+  if(!signupData?.session?.user){
+    return toast('Signup succeeded but no session was created. Turn off Confirm email in Supabase Authentication → Providers → Email.');
+  }
+
+  await initializeNewUserProfile(signupData.session.user,fullName);
   form.closest('dialog')?.close();
   form.reset();
-  if(signupData?.session){
-    location.href='onboarding.html';
-    return;
-  }
-  toast('Account created. Confirm your email, then choose at least 5 creators.','success');
+  toast('Welcome to LaunchBoard! Choose 5 creators to continue.','success');
+  setTimeout(()=>location.replace('onboarding.html'),250);
 }
 
 
